@@ -23,6 +23,24 @@ func TestSpaceMap(t *testing.T) {
 			SpaceMap: NewSpaceMap().Add(rect1),
 		},
 		{
+			Name:     "Hit Low Border",
+			Stack:    []Shape{rect1},
+			Position: rect1.Min,
+			SpaceMap: NewSpaceMap().Add(rect1),
+		},
+		{
+			Name:     "Hit High Border",
+			Stack:    []Shape{rect1},
+			Position: rect1.Max,
+			SpaceMap: NewSpaceMap().Add(rect1),
+		},
+		{
+			Name:     "Miss -- Near Hit High Border",
+			Stack:    []Shape{rect1},
+			Position: rect1.Max.Add(image.Pt(1, 1)),
+			SpaceMap: NewSpaceMap().Add(rect1),
+		},
+		{
 			Name:     "Miss",
 			Stack:    []Shape{},
 			Position: image.Point{-20, -20},

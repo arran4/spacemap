@@ -186,7 +186,7 @@ func (m *SpaceMap) GetStackAt(x int, y int) []Shape {
 		if (vs == nil || vs.Position != y) && yi > 0 {
 			vs = m.VSplits[yi-1]
 		}
-		if hs != nil && vs != nil {
+		if hs != nil && vs != nil && vs.Position <= y && hs.Position <= y {
 			if s, ok := m.Stacks[SC(hs, vs)]; ok && s != nil {
 				return s
 			} else {
