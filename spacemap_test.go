@@ -36,6 +36,13 @@ func TestSpaceMap(t *testing.T) {
 					len(test.SpaceMap.VSplits)*len(test.SpaceMap.HSplits), len(test.SpaceMap.VSplits),
 					len(test.SpaceMap.HSplits), len(test.SpaceMap.Stacks))
 			}
+			for k := range test.SpaceMap.Stacks {
+				t.Run(fmt.Sprintf("Map check: %v %v", k.HSplit.Position, k.VSplit.Position), func(t *testing.T) {
+					if !k.Sane() {
+						t.Errorf("Not sane")
+					}
+				})
+			}
 			stack := test.SpaceMap.GetStackAt(test.Position.X, test.Position.Y)
 			if s := cmp.Diff(stack, test.Stack); len(s) > 0 {
 				t.Errorf("Failed stacks differ: %s", s)

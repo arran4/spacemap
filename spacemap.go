@@ -25,13 +25,14 @@ type SplitCoordination struct {
 	VSplit *Split
 }
 
-func (c SplitCoordination) Check() {
+func (c SplitCoordination) Sane() bool {
 	if c.VSplit.Alignment != Vertical {
-		panic("Alignment check fail")
+		return false
 	}
 	if c.HSplit.Alignment != Horizontal {
-		panic("Alignment check fail")
+		return false
 	}
+	return true
 }
 
 func SC(HSplit *Split, VSplit *Split) SplitCoordination {
@@ -39,7 +40,6 @@ func SC(HSplit *Split, VSplit *Split) SplitCoordination {
 		HSplit,
 		VSplit,
 	}
-	coordination.Check()
 	return coordination
 }
 
