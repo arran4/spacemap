@@ -6,14 +6,41 @@ import (
 	"sort"
 )
 
+type Alignment int
+
+const (
+	NotAligned Alignment = iota
+	Vertical
+	Horizontal
+)
+
 type Split struct {
 	Position  int
 	BecauseOf []Shape
+	Alignment Alignment
 }
 
 type SplitCoordination struct {
 	HSplit *Split
 	VSplit *Split
+}
+
+func (c SplitCoordination) Check() {
+	if c.VSplit.Alignment != Vertical {
+		panic("Alignment check fail")
+	}
+	if c.HSplit.Alignment != Horizontal {
+		panic("Alignment check fail")
+	}
+}
+
+func SC(HSplit *Split, VSplit *Split) SplitCoordination {
+	coordination := SplitCoordination{
+		HSplit,
+		VSplit,
+	}
+	coordination.Check()
+	return coordination
 }
 
 type SpaceMap struct {
@@ -30,7 +57,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 		for y := minyi; y < maxyi; y++ {
 			hs := m.HSplits[x]
 			vs := m.VSplits[y]
-			m.Stacks[SplitCoordination{hs, vs}] = append(m.Stacks[SplitCoordination{hs, vs}], shape)
+			m.Stacks[SC(hs, vs)] = append(m.Stacks[SC(hs, vs)], shape)
 		}
 	}
 	{
@@ -39,6 +66,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 			maxxhs[0] = &Split{
 				Position:  b.Max.X,
 				BecauseOf: []Shape{shape},
+				Alignment: Horizontal,
 			}
 			m.HSplits = append(m.HSplits[:maxxi], append([]*Split{maxxhs[0]}, m.HSplits[maxxi:]...)...)
 			if maxxi-1 >= 0 {
@@ -51,6 +79,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 			vs := &Split{
 				Position:  b.Max.Y,
 				BecauseOf: []Shape{shape},
+				Alignment: Vertical,
 			}
 			m.VSplits = append(m.VSplits[:maxyi], append([]*Split{vs}, m.VSplits[maxyi:]...)...)
 			var pvs *Split = nil
@@ -61,9 +90,9 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 				hs := m.HSplits[x]
 				var ps = []Shape{}
 				if pvs != nil {
-					ps = m.Stacks[SplitCoordination{hs, pvs}]
+					ps = m.Stacks[SC(hs, pvs)]
 				}
-				m.Stacks[SplitCoordination{hs, vs}] = append(append([]Shape{}, ps...), shape)
+				m.Stacks[SC(hs, vs)] = append(append([]Shape{}, ps...), shape)
 			}
 		} else {
 			m.VSplits[maxxi].BecauseOf = append(m.VSplits[maxxi].BecauseOf, shape)
@@ -73,9 +102,9 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 				vs := m.VSplits[y]
 				var ps = []Shape{}
 				if maxxhs[1] != nil {
-					ps = m.Stacks[SplitCoordination{maxxhs[1], vs}]
+					ps = m.Stacks[SC(maxxhs[1], vs)]
 				}
-				m.Stacks[SplitCoordination{maxxhs[0], vs}] = append(append([]Shape{}, ps...), shape)
+				m.Stacks[SC(maxxhs[0], vs)] = append(append([]Shape{}, ps...), shape)
 			}
 		}
 	}
@@ -85,6 +114,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 			minxhs[0] = &Split{
 				Position:  b.Min.X,
 				BecauseOf: []Shape{shape},
+				Alignment: Horizontal,
 			}
 			m.HSplits = append(m.HSplits[:minxi], append([]*Split{minxhs[0]}, m.HSplits[minxi:]...)...)
 			if minxi-1 >= 0 {
@@ -97,6 +127,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 			vs := &Split{
 				Position:  b.Min.Y,
 				BecauseOf: []Shape{shape},
+				Alignment: Vertical,
 			}
 			m.VSplits = append(m.VSplits[:minyi], append([]*Split{vs}, m.VSplits[minyi:]...)...)
 			var pvs *Split = nil
@@ -107,9 +138,9 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 				ohs := m.HSplits[x]
 				var ps = []Shape{}
 				if pvs != nil {
-					ps = m.Stacks[SplitCoordination{ohs, pvs}]
+					ps = m.Stacks[SC(ohs, pvs)]
 				}
-				m.Stacks[SplitCoordination{vs, ohs}] = append(append([]Shape{}, ps...), shape)
+				m.Stacks[SC(ohs, vs)] = append(append([]Shape{}, ps...), shape)
 			}
 		} else {
 			m.VSplits[minxi].BecauseOf = append(m.VSplits[minxi].BecauseOf, shape)
@@ -119,9 +150,9 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 				vs := m.VSplits[y]
 				var ps = []Shape{}
 				if minxhs[1] != nil {
-					ps = m.Stacks[SplitCoordination{minxhs[1], vs}]
+					ps = m.Stacks[SC(minxhs[1], vs)]
 				}
-				m.Stacks[SplitCoordination{minxhs[0], vs}] = append(append([]Shape{}, ps...), shape)
+				m.Stacks[SC(minxhs[0], vs)] = append(append([]Shape{}, ps...), shape)
 			}
 		}
 	}
@@ -156,7 +187,7 @@ func (m *SpaceMap) GetStackAt(x int, y int) []Shape {
 			vs = m.VSplits[yi-1]
 		}
 		if hs != nil && vs != nil {
-			if s, ok := m.Stacks[SplitCoordination{hs, vs}]; ok && s != nil {
+			if s, ok := m.Stacks[SC(hs, vs)]; ok && s != nil {
 				return s
 			} else {
 				log.Default()
