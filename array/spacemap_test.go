@@ -4,87 +4,88 @@ import (
 	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"image"
+	"spacemap/shared"
 	"strings"
 	"testing"
 )
 
-func NSM(shapes ...Shape) func() *SpaceMap {
+func NSM(shapes ...shared.Shape) func() *SpaceMap {
 	return func() *SpaceMap {
 		return NewSpaceMap().AddAll(shapes...)
 	}
 }
 
 func TestSpaceMap(t *testing.T) {
-	rect1 := NewRectangle(10, 10, 100, 100)
-	rect2 := NewRectangle(40, 40, 60, 60)
-	rect3 := NewRectangle(10, 10, 60, 60)
-	rect4 := NewRectangle(60, 60, 100, 100)
+	rect1 := shared.NewRectangle(10, 10, 100, 100)
+	rect2 := shared.NewRectangle(40, 40, 60, 60)
+	rect3 := shared.NewRectangle(10, 10, 60, 60)
+	rect4 := shared.NewRectangle(60, 60, 100, 100)
 	for _, test := range []struct {
 		Name      string
-		Stack     []Shape
+		Stack     []shared.Shape
 		Position  image.Point
 		SpaceMap  func() *SpaceMap
 		NumberMap [][]int
 	}{
 		{
 			Name:      "Hit",
-			Stack:     []Shape{rect1},
+			Stack:     []shared.Shape{rect1},
 			Position:  image.Point{20, 20},
 			SpaceMap:  NSM(rect1),
 			NumberMap: [][]int{{1, 1}, {1, 1}},
 		},
 		{
 			Name:      "Hit Low Border",
-			Stack:     []Shape{rect1},
+			Stack:     []shared.Shape{rect1},
 			Position:  rect1.Min,
 			SpaceMap:  NSM(rect1),
 			NumberMap: [][]int{{1, 1}, {1, 1}},
 		},
 		{
 			Name:      "Hit High Border",
-			Stack:     []Shape{rect1},
+			Stack:     []shared.Shape{rect1},
 			Position:  rect1.Max,
 			SpaceMap:  NSM(rect1),
 			NumberMap: [][]int{{1, 1}, {1, 1}},
 		},
 		{
 			Name:      "Miss -- Near Hit High Border",
-			Stack:     []Shape{rect1},
+			Stack:     []shared.Shape{rect1},
 			Position:  rect1.Max.Add(image.Pt(1, 1)),
 			SpaceMap:  NSM(rect1),
 			NumberMap: [][]int{{1, 1}, {1, 1}},
 		},
 		{
 			Name:      "Miss",
-			Stack:     []Shape{},
+			Stack:     []shared.Shape{},
 			Position:  image.Point{-20, -20},
 			SpaceMap:  NSM(rect1),
 			NumberMap: [][]int{{1, 1}, {1, 1}},
 		},
 		{
 			Name:      "Hit first with 2 overlapping",
-			Stack:     []Shape{rect1},
+			Stack:     []shared.Shape{rect1},
 			Position:  image.Point{20, 20},
 			SpaceMap:  NSM(rect1, rect2),
 			NumberMap: [][]int{{1, 1, 1, 1}, {1, 2, 2, 1}, {1, 2, 2, 1}, {1, 1, 1, 1}},
 		},
 		{
 			Name:      "Hit both with 2 overlapping",
-			Stack:     []Shape{rect1, rect2},
+			Stack:     []shared.Shape{rect1, rect2},
 			Position:  image.Point{50, 50},
 			SpaceMap:  NSM(rect1, rect2),
 			NumberMap: [][]int{{1, 1, 1, 1}, {1, 2, 2, 1}, {1, 2, 2, 1}, {1, 1, 1, 1}},
 		},
 		{
 			Name:      "Hit both with 2 overlapping same start",
-			Stack:     []Shape{rect1, rect3},
+			Stack:     []shared.Shape{rect1, rect3},
 			Position:  image.Point{20, 20},
 			SpaceMap:  NSM(rect1, rect3),
 			NumberMap: [][]int{{2, 2, 1}, {2, 2, 1}, {1, 1, 1}},
 		},
 		{
 			Name:      "Hit both with 2 overlapping same end",
-			Stack:     []Shape{rect1, rect4},
+			Stack:     []shared.Shape{rect1, rect4},
 			Position:  image.Point{90, 90},
 			SpaceMap:  NSM(rect1, rect4),
 			NumberMap: [][]int{{1, 1, 1}, {1, 2, 2}, {1, 2, 2}},

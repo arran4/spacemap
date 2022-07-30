@@ -4,6 +4,7 @@ import (
 	"image"
 	"log"
 	"sort"
+	"spacemap/shared"
 )
 
 type Alignment int
@@ -16,7 +17,7 @@ const (
 
 type Split struct {
 	Position  int
-	BecauseOf []Shape
+	BecauseOf []shared.Shape
 	Alignment Alignment
 }
 
@@ -46,17 +47,17 @@ func SC(HSplit *Split, VSplit *Split) SplitCoordination {
 type SpaceMap struct {
 	VSplits []*Split
 	HSplits []*Split
-	Stacks  map[SplitCoordination][]Shape
+	Stacks  map[SplitCoordination][]shared.Shape
 }
 
-func (m *SpaceMap) AddAll(shapes ...Shape) *SpaceMap {
+func (m *SpaceMap) AddAll(shapes ...shared.Shape) *SpaceMap {
 	for _, shape := range shapes {
 		m.Add(shape)
 	}
 	return m
 }
 
-func (m *SpaceMap) Add(shape Shape) *SpaceMap {
+func (m *SpaceMap) Add(shape shared.Shape) *SpaceMap {
 	b := shape.Bounds()
 	minxi, minyi := m.GetXYPositions(b.Min)
 	maxxi, maxyi := m.GetXYPositions(b.Max)
@@ -65,7 +66,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 		if maxxi == len(m.HSplits) || m.HSplits[maxxi].Position != b.Max.X {
 			maxxhs[0] = &Split{
 				Position:  b.Max.X,
-				BecauseOf: []Shape{shape},
+				BecauseOf: []shared.Shape{shape},
 				Alignment: Horizontal,
 			}
 			if maxxi >= 0 && maxxi < len(m.HSplits) {
@@ -79,7 +80,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 			var ovs *Split
 			vs := &Split{
 				Position:  b.Max.Y,
-				BecauseOf: []Shape{shape},
+				BecauseOf: []shared.Shape{shape},
 				Alignment: Vertical,
 			}
 			if maxyi >= 0 && maxyi < len(m.VSplits) {
@@ -95,9 +96,9 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 				}
 				if ovs != nil {
 					if hs != maxxhs[0] {
-						m.Stacks[SC(hs, vs)] = append([]Shape{}, m.Stacks[SC(hs, ovs)]...)
+						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(hs, ovs)]...)
 					} else if lhs != nil {
-						m.Stacks[SC(hs, vs)] = append([]Shape{}, m.Stacks[SC(lhs, ovs)]...)
+						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(lhs, ovs)]...)
 					}
 				}
 				lhs = hs
@@ -112,7 +113,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 					continue
 				}
 				if maxxhs[1] != nil {
-					m.Stacks[SC(maxxhs[0], vs)] = append([]Shape{}, m.Stacks[SC(maxxhs[1], vs)]...)
+					m.Stacks[SC(maxxhs[0], vs)] = append([]shared.Shape{}, m.Stacks[SC(maxxhs[1], vs)]...)
 				}
 			}
 		}
@@ -122,7 +123,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 		if m.HSplits[minxi].Position != b.Min.X {
 			minxhs[0] = &Split{
 				Position:  b.Min.X,
-				BecauseOf: []Shape{shape},
+				BecauseOf: []shared.Shape{shape},
 				Alignment: Horizontal,
 			}
 			if minxi >= 0 && minxi < len(m.HSplits) {
@@ -136,7 +137,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 		if m.VSplits[minyi].Position != b.Min.Y {
 			vs := &Split{
 				Position:  b.Min.Y,
-				BecauseOf: []Shape{shape},
+				BecauseOf: []shared.Shape{shape},
 				Alignment: Vertical,
 			}
 			var pvs *Split
@@ -153,9 +154,9 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 				}
 				if pvs != nil {
 					if hs != minxhs[0] {
-						m.Stacks[SC(hs, vs)] = append([]Shape{}, m.Stacks[SC(hs, pvs)]...)
+						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(hs, pvs)]...)
 					} else if lhs != nil {
-						m.Stacks[SC(hs, vs)] = append([]Shape{}, m.Stacks[SC(lhs, pvs)]...)
+						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(lhs, pvs)]...)
 					}
 				}
 				lhs = hs
@@ -171,7 +172,7 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 					continue
 				}
 				if minxhs[1] != nil {
-					m.Stacks[SC(minxhs[0], vs)] = append([]Shape{}, m.Stacks[SC(minxhs[1], vs)]...)
+					m.Stacks[SC(minxhs[0], vs)] = append([]shared.Shape{}, m.Stacks[SC(minxhs[1], vs)]...)
 				}
 			}
 		}
@@ -196,7 +197,7 @@ func (m *SpaceMap) GetXYPositions(p image.Point) (int, int) {
 	return minxi, minyi
 }
 
-func (m *SpaceMap) GetStackAt(x int, y int) []Shape {
+func (m *SpaceMap) GetStackAt(x int, y int) []shared.Shape {
 	xi, yi := m.GetXYPositions(image.Point{x, y})
 	if xi >= 0 && yi >= 0 && xi <= len(m.HSplits) && yi <= len(m.VSplits) {
 		var hs *Split = nil
@@ -221,43 +222,13 @@ func (m *SpaceMap) GetStackAt(x int, y int) []Shape {
 			}
 		}
 	}
-	return []Shape{}
+	return []shared.Shape{}
 }
 
 func NewSpaceMap() *SpaceMap {
 	return &SpaceMap{
 		VSplits: []*Split{},
 		HSplits: []*Split{},
-		Stacks:  map[SplitCoordination][]Shape{},
-	}
-}
-
-type Shape interface {
-	PointIn(x, y int) bool
-	Bounds() image.Rectangle
-}
-
-type Rectangle image.Rectangle
-
-func (r Rectangle) PointIn(x, y int) bool {
-	return (image.Point{x, y}).In(image.Rectangle(r))
-}
-
-func (r Rectangle) Bounds() image.Rectangle {
-	return image.Rectangle(r)
-}
-
-var _ Shape = (*Rectangle)(nil)
-
-func NewRectangle(left, top, right, bottom int) *Rectangle {
-	return &Rectangle{
-		Min: image.Point{
-			left,
-			top,
-		},
-		Max: image.Point{
-			right,
-			bottom,
-		},
+		Stacks:  map[SplitCoordination][]shared.Shape{},
 	}
 }
