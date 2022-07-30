@@ -2,6 +2,7 @@ package spacemap
 
 import (
 	"image"
+	"log"
 	"sort"
 )
 
@@ -10,10 +11,15 @@ type Split struct {
 	BecauseOf []Shape
 }
 
+type SplitCoordination struct {
+	HSplit *Split
+	VSplit *Split
+}
+
 type SpaceMap struct {
 	VSplits []*Split
 	HSplits []*Split
-	Stacks  map[[2]*Split][]Shape
+	Stacks  map[SplitCoordination][]Shape
 }
 
 func (m *SpaceMap) Add(shape Shape) *SpaceMap {
@@ -24,104 +30,99 @@ func (m *SpaceMap) Add(shape Shape) *SpaceMap {
 		for y := minyi; y < maxyi; y++ {
 			hs := m.HSplits[x]
 			vs := m.VSplits[y]
-			m.Stacks[[2]*Split{hs, vs}] = append(m.Stacks[[2]*Split{hs, vs}], shape)
+			m.Stacks[SplitCoordination{hs, vs}] = append(m.Stacks[SplitCoordination{hs, vs}], shape)
 		}
 	}
-	var maxvhs [2]*Split
-	if maxxi == len(m.HSplits) || m.HSplits[maxxi].Position != b.Max.X {
-		maxvhs[0] = &Split{
-			Position:  b.Max.X,
-			BecauseOf: []Shape{shape},
-		}
-		m.HSplits = append(append(m.HSplits[:maxxi], maxvhs[0]), m.HSplits[maxxi:]...)
-		if maxxi-1 >= 0 {
-			maxvhs[1] = m.HSplits[maxxi-1]
-		}
-	} else {
-		m.HSplits[maxxi].BecauseOf = append(m.HSplits[maxxi].BecauseOf, shape)
-	}
-	if maxyi == len(m.VSplits) || m.VSplits[maxyi].Position != b.Max.Y {
-		vs := &Split{
-			Position:  b.Max.Y,
-			BecauseOf: []Shape{shape},
-		}
-		m.VSplits = append(append(m.VSplits[:maxyi], vs), m.VSplits[maxyi:]...)
-		var phs *Split = nil
-		if maxyi-1 >= 0 {
-			phs = m.VSplits[maxyi-1]
-		}
-		for x := 0; x < len(m.HSplits); x++ {
-			ovs := m.HSplits[x]
-			var ps = []Shape{}
-			if phs != nil {
-				ps = m.Stacks[[2]*Split{phs, ovs}]
+	{
+		var maxxhs [2]*Split
+		if maxxi == len(m.HSplits) || m.HSplits[maxxi].Position != b.Max.X {
+			maxxhs[0] = &Split{
+				Position:  b.Max.X,
+				BecauseOf: []Shape{shape},
 			}
-			m.Stacks[[2]*Split{vs, ovs}] = append(append([]Shape{}, ps...), shape)
-		}
-	} else {
-		m.VSplits[maxxi].BecauseOf = append(m.VSplits[maxxi].BecauseOf, shape)
-	}
-	if maxvhs[0] != nil {
-		for y := 0; y < len(m.VSplits); y++ {
-			vs := m.VSplits[y]
-			var ps = []Shape{}
-			if maxvhs[1] != nil {
-				ps = m.Stacks[[2]*Split{maxvhs[1], vs}]
+			m.HSplits = append(m.HSplits[:maxxi], append([]*Split{maxxhs[0]}, m.HSplits[maxxi:]...)...)
+			if maxxi-1 >= 0 {
+				maxxhs[1] = m.HSplits[maxxi-1]
 			}
-			m.Stacks[[2]*Split{maxvhs[0], vs}] = append(append([]Shape{}, ps...), shape)
+		} else {
+			m.HSplits[maxxi].BecauseOf = append(m.HSplits[maxxi].BecauseOf, shape)
+		}
+		if maxyi == len(m.VSplits) || m.VSplits[maxyi].Position != b.Max.Y {
+			vs := &Split{
+				Position:  b.Max.Y,
+				BecauseOf: []Shape{shape},
+			}
+			m.VSplits = append(m.VSplits[:maxyi], append([]*Split{vs}, m.VSplits[maxyi:]...)...)
+			var pvs *Split = nil
+			if maxyi-1 >= 0 {
+				pvs = m.VSplits[maxyi-1]
+			}
+			for x := 0; x < len(m.HSplits); x++ {
+				hs := m.HSplits[x]
+				var ps = []Shape{}
+				if pvs != nil {
+					ps = m.Stacks[SplitCoordination{hs, pvs}]
+				}
+				m.Stacks[SplitCoordination{hs, vs}] = append(append([]Shape{}, ps...), shape)
+			}
+		} else {
+			m.VSplits[maxxi].BecauseOf = append(m.VSplits[maxxi].BecauseOf, shape)
+		}
+		if maxxhs[0] != nil {
+			for y := 0; y < len(m.VSplits); y++ {
+				vs := m.VSplits[y]
+				var ps = []Shape{}
+				if maxxhs[1] != nil {
+					ps = m.Stacks[SplitCoordination{maxxhs[1], vs}]
+				}
+				m.Stacks[SplitCoordination{maxxhs[0], vs}] = append(append([]Shape{}, ps...), shape)
+			}
 		}
 	}
-	if m.HSplits[minxi].Position != b.Min.X {
-		hs := &Split{
-			Position:  b.Min.X,
-			BecauseOf: []Shape{shape},
-		}
-		m.HSplits = append(append(m.HSplits[:minxi], hs), m.HSplits[minxi:]...)
-		var phs *Split = nil
-		if minxi-1 >= 0 {
-			phs = m.HSplits[minxi-1]
-		}
-		for y := 0; y < len(m.VSplits); y++ {
-			vs := m.VSplits[y]
-			var ps = []Shape{}
-			if phs != nil {
-				ps = m.Stacks[[2]*Split{phs, vs}]
+	{
+		var minxhs [2]*Split
+		if m.HSplits[minxi].Position != b.Min.X {
+			minxhs[0] = &Split{
+				Position:  b.Min.X,
+				BecauseOf: []Shape{shape},
 			}
-			m.Stacks[[2]*Split{hs, vs}] = append(append([]Shape{}, ps...), shape)
-		}
-	} else {
-		m.HSplits[minxi].BecauseOf = append(m.HSplits[minxi].BecauseOf, shape)
-	}
-	if m.VSplits[minyi].Position != b.Min.Y {
-		vs := &Split{
-			Position:  b.Min.Y,
-			BecauseOf: []Shape{shape},
-		}
-		m.VSplits = append(append(m.VSplits[:minyi], vs), m.VSplits[minyi:]...)
-		var phs *Split = nil
-		if minyi-1 >= 0 {
-			phs = m.VSplits[minyi-1]
-		}
-		for x := 0; x < len(m.HSplits); x++ {
-			ovs := m.HSplits[x]
-			var ps = []Shape{}
-			if phs != nil {
-				ps = m.Stacks[[2]*Split{phs, ovs}]
+			m.HSplits = append(m.HSplits[:minxi], append([]*Split{minxhs[0]}, m.HSplits[minxi:]...)...)
+			if minxi-1 >= 0 {
+				minxhs[1] = m.HSplits[minxi-1]
 			}
-			m.Stacks[[2]*Split{vs, ovs}] = append(append([]Shape{}, ps...), shape)
+		} else {
+			m.HSplits[minxi].BecauseOf = append(m.HSplits[minxi].BecauseOf, shape)
 		}
-	} else {
-		m.VSplits[minxi].BecauseOf = append(m.VSplits[minxi].BecauseOf, shape)
-	}
-	var minvhs [2]*Split
-	if minvhs[0] != nil {
-		for y := 0; y < len(m.VSplits); y++ {
-			vs := m.VSplits[y]
-			var ps = []Shape{}
-			if minvhs[1] != nil {
-				ps = m.Stacks[[2]*Split{minvhs[1], vs}]
+		if m.VSplits[minyi].Position != b.Min.Y {
+			vs := &Split{
+				Position:  b.Min.Y,
+				BecauseOf: []Shape{shape},
 			}
-			m.Stacks[[2]*Split{minvhs[0], vs}] = append(append([]Shape{}, ps...), shape)
+			m.VSplits = append(m.VSplits[:minyi], append([]*Split{vs}, m.VSplits[minyi:]...)...)
+			var pvs *Split = nil
+			if minyi-1 >= 0 {
+				pvs = m.VSplits[minyi-1]
+			}
+			for x := 0; x < len(m.HSplits); x++ {
+				ohs := m.HSplits[x]
+				var ps = []Shape{}
+				if pvs != nil {
+					ps = m.Stacks[SplitCoordination{ohs, pvs}]
+				}
+				m.Stacks[SplitCoordination{vs, ohs}] = append(append([]Shape{}, ps...), shape)
+			}
+		} else {
+			m.VSplits[minxi].BecauseOf = append(m.VSplits[minxi].BecauseOf, shape)
+		}
+		if minxhs[0] != nil {
+			for y := 0; y < len(m.VSplits); y++ {
+				vs := m.VSplits[y]
+				var ps = []Shape{}
+				if minxhs[1] != nil {
+					ps = m.Stacks[SplitCoordination{minxhs[1], vs}]
+				}
+				m.Stacks[SplitCoordination{minxhs[0], vs}] = append(append([]Shape{}, ps...), shape)
+			}
 		}
 	}
 	return m
@@ -155,8 +156,10 @@ func (m *SpaceMap) GetStackAt(x int, y int) []Shape {
 			vs = m.VSplits[yi-1]
 		}
 		if hs != nil && vs != nil {
-			if s, ok := m.Stacks[[2]*Split{hs, vs}]; ok && s != nil {
+			if s, ok := m.Stacks[SplitCoordination{hs, vs}]; ok && s != nil {
 				return s
+			} else {
+				log.Default()
 			}
 		}
 	}
@@ -167,7 +170,7 @@ func NewSpaceMap() *SpaceMap {
 	return &SpaceMap{
 		VSplits: []*Split{},
 		HSplits: []*Split{},
-		Stacks:  map[[2]*Split][]Shape{},
+		Stacks:  map[SplitCoordination][]Shape{},
 	}
 }
 

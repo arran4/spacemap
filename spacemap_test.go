@@ -1,8 +1,10 @@
 package spacemap
 
 import (
+	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"image"
+	"strings"
 	"testing"
 )
 
@@ -29,6 +31,7 @@ func TestSpaceMap(t *testing.T) {
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			if len(test.SpaceMap.VSplits)*len(test.SpaceMap.HSplits) != len(test.SpaceMap.Stacks) {
+				LogStructure(t, test.SpaceMap)
 				t.Errorf("Incorrect number of cells expected %d ( %d * %d ) but got %d",
 					len(test.SpaceMap.VSplits)*len(test.SpaceMap.HSplits), len(test.SpaceMap.VSplits),
 					len(test.SpaceMap.HSplits), len(test.SpaceMap.Stacks))
@@ -39,4 +42,25 @@ func TestSpaceMap(t *testing.T) {
 			}
 		})
 	}
+}
+
+func LogStructure(t *testing.T, spaceMap *SpaceMap) {
+	b := strings.Builder{}
+	b.WriteString("\n____\t")
+	for _, v := range spaceMap.VSplits {
+		b.WriteString(fmt.Sprintf("p: %d,\t", v.Position))
+	}
+	b.WriteString("\n")
+	for _, h := range spaceMap.HSplits {
+		b.WriteString(fmt.Sprintf("p: %d,\t", h.Position))
+		for _, v := range spaceMap.VSplits {
+			if sq, ok := spaceMap.Stacks[SplitCoordination{h, v}]; ok {
+				b.WriteString(fmt.Sprintf("c: %d,\t", len(sq)))
+			} else {
+				b.WriteString(fmt.Sprintf("null,\t"))
+			}
+		}
+		b.WriteString("\n")
+	}
+	t.Log(b.String())
 }
