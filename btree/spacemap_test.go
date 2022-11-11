@@ -1,11 +1,8 @@
 package btree
 
 import (
-	"fmt"
 	"github.com/google/go-cmp/cmp"
-	"image"
 	"spacemap/shared"
-	"strings"
 	"testing"
 )
 
@@ -15,7 +12,7 @@ func NSM(shapes ...shared.Shape) func() *SpaceMap {
 	}
 }
 
-func TestSpaceMap(t *testing.T) {
+/*func TestSpaceMap(t *testing.T) {
 	rect1 := shared.NewRectangle(10, 10, 100, 100)
 	rect2 := shared.NewRectangle(40, 40, 60, 60)
 	rect3 := shared.NewRectangle(10, 10, 60, 60)
@@ -122,63 +119,125 @@ func TestSpaceMap(t *testing.T) {
 		})
 	}
 }
+*/
 
-func NumberMapper(spaceMap *SpaceMap) (result [][]int) {
-	result = make([][]int, len(spaceMap.HSplits), len(spaceMap.HSplits))
-	for hi, h := range spaceMap.HSplits {
-		result[hi] = make([]int, len(spaceMap.VSplits), len(spaceMap.VSplits))
-		for vi, v := range spaceMap.VSplits {
-			if sq, ok := spaceMap.Stacks[SplitCoordination{h, v}]; ok {
-				result[hi][vi] = len(sq)
+func TestHereInsert(t *testing.T) {
+	tests := []struct {
+		name  string
+		n     []*Here
+		wantN []*Here
+		zi    int
+		wantP int
+	}{
+		{
+			name:  "Empty",
+			n:     []*Here{},
+			zi:    0,
+			wantP: 0,
+			wantN: []*Here{},
+		},
+		{
+			name: "1 Before 2",
+			n: []*Here{
+				{
+					ZIndex: 2,
+				},
+			},
+			zi:    1,
+			wantP: 0,
+			wantN: []*Here{
+				{
+					ZIndex: 2,
+				},
+			},
+		},
+		{
+			name: "2 Before 2",
+			n: []*Here{
+				{
+					ZIndex: 2,
+				},
+			},
+			zi:    2,
+			wantP: 0,
+			wantN: []*Here{
+				{
+					ZIndex: 3,
+				},
+			},
+		},
+		{
+			name: "1 Between 0,1",
+			n: []*Here{
+				{
+					ZIndex: 0,
+				},
+				{
+					ZIndex: 1,
+				},
+			},
+			zi:    1,
+			wantP: 1,
+			wantN: []*Here{
+				{
+					ZIndex: 0,
+				},
+				{
+					ZIndex: 2,
+				},
+			},
+		},
+		{
+			name: "0 Before 0,1",
+			n: []*Here{
+				{
+					ZIndex: 0,
+				},
+				{
+					ZIndex: 1,
+				},
+			},
+			zi:    0,
+			wantP: 0,
+			wantN: []*Here{
+				{
+					ZIndex: 1,
+				},
+				{
+					ZIndex: 2,
+				},
+			},
+		},
+		{
+			name: "2 After 1",
+			n: []*Here{
+				{
+					ZIndex: 0,
+				},
+				{
+					ZIndex: 1,
+				},
+			},
+			zi:    2,
+			wantP: 2,
+			wantN: []*Here{
+				{
+					ZIndex: 0,
+				},
+				{
+					ZIndex: 1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotP := HereInsert(tt.n, tt.zi); gotP != tt.wantP {
+				t.Errorf("HereInsert() = %v, want %v", gotP, tt.wantP)
 			}
-		}
-	}
-	return
-}
-
-func LogStructure(t *testing.T, spaceMap *SpaceMap) {
-	b := strings.Builder{}
-	b.WriteString("\n____\t")
-	for _, v := range spaceMap.VSplits {
-		b.WriteString(fmt.Sprintf("p: %d,\t", v.Position))
-	}
-	b.WriteString("\n")
-	for _, h := range spaceMap.HSplits {
-		b.WriteString(fmt.Sprintf("p: %d,\t", h.Position))
-		for _, v := range spaceMap.VSplits {
-			if sq, ok := spaceMap.Stacks[SplitCoordination{h, v}]; ok {
-				b.WriteString(fmt.Sprintf("c: %d,\t", len(sq)))
-			} else {
-				b.WriteString(fmt.Sprintf("null,\t"))
+			if diff := cmp.Diff(tt.n, tt.wantN); diff != "" {
+				t.Errorf("N Diff: \n%s", diff)
 			}
-		}
-		b.WriteString("\n")
+		})
 	}
-	t.Log(b.String())
-}
-
-func LogStructureContents(t *testing.T, spaceMap *SpaceMap) {
-	b := strings.Builder{}
-	const format = "%40s"
-	b.WriteString(fmt.Sprintf("\n"+format, "____"))
-	for _, v := range spaceMap.VSplits {
-		b.WriteString(fmt.Sprintf(format, fmt.Sprintf("p: %d,", v.Position)))
-	}
-	b.WriteString("\n")
-	for _, h := range spaceMap.HSplits {
-		b.WriteString(fmt.Sprintf(format, fmt.Sprintf("p: %d,", h.Position)))
-		for _, v := range spaceMap.VSplits {
-			if sq, ok := spaceMap.Stacks[SplitCoordination{h, v}]; ok {
-				bb := strings.Builder{}
-				for _, sqe := range sq {
-					bb.WriteString(fmt.Sprintf("%s,", sqe.Bounds()))
-				}
-				b.WriteString(fmt.Sprintf(format, bb.String()))
-			} else {
-				b.WriteString(fmt.Sprintf(format, fmt.Sprintf("null,")))
-			}
-		}
-		b.WriteString("\n")
-	}
-	t.Log(b.String())
 }
