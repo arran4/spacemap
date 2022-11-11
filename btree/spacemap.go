@@ -33,13 +33,17 @@ func (n *Node) Add(p int, s shared.Shape, hType Type, zIndex *int) *Node {
 		if zIndex != nil {
 			zi = *zIndex
 		}
-		HereInsert(n.Here, zi)
+		r := HereInsert(n.Here, zi)
 		h := &Here{
 			Shape:  s,
 			ZIndex: zi,
 			Type:   hType,
 		}
 		n.Here = append(n.Here, h)
+		if r <= len(n.Here) {
+			copy(n.Here[r:], n.Here[r+1:])
+			n.Here[r] = h
+		}
 	}
 	if n.Value > p {
 		n.Children[0] = n.Children[0].Add(p, s, hType, zIndex)

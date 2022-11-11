@@ -124,9 +124,9 @@ func TestSpaceMap(t *testing.T) {
 }
 
 func NumberMapper(spaceMap *SpaceMap) (result [][]int) {
-	result = make([][]int, len(spaceMap.HSplits), len(spaceMap.HSplits))
+	result = make([][]int, len(spaceMap.HSplits))
 	for hi, h := range spaceMap.HSplits {
-		result[hi] = make([]int, len(spaceMap.VSplits), len(spaceMap.VSplits))
+		result[hi] = make([]int, len(spaceMap.VSplits))
 		for vi, v := range spaceMap.VSplits {
 			if sq, ok := spaceMap.Stacks[SplitCoordination{h, v}]; ok {
 				result[hi][vi] = len(sq)
@@ -149,7 +149,7 @@ func LogStructure(t *testing.T, spaceMap *SpaceMap) {
 			if sq, ok := spaceMap.Stacks[SplitCoordination{h, v}]; ok {
 				b.WriteString(fmt.Sprintf("c: %d,\t", len(sq)))
 			} else {
-				b.WriteString(fmt.Sprintf("null,\t"))
+				b.WriteString("null,\t")
 			}
 		}
 		b.WriteString("\n")
@@ -175,7 +175,7 @@ func LogStructureContents(t *testing.T, spaceMap *SpaceMap) {
 				}
 				b.WriteString(fmt.Sprintf(format, bb.String()))
 			} else {
-				b.WriteString(fmt.Sprintf(format, fmt.Sprintf("null,")))
+				b.WriteString(fmt.Sprintf(format, "null,"))
 			}
 		}
 		b.WriteString("\n")
