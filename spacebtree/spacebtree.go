@@ -94,14 +94,11 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 
 func (n *Node) InsertHere(zi int, s shared.Shape, t Type) {
 	r := 0
-	for ; r < len(n.Here); r++ {
-		if zi >= n.Here[r].ZIndex {
-			break
-		}
+	for ; r < len(n.Here) && n.Here[r].ZIndex < zi; r++ {
 	}
 	n.Here = append(n.Here, nil)
 	if r < len(n.Here) {
-		copy(n.Here[r+1:], n.Here[r:])
+		copy(n.Here[r+1:], n.Here[r:len(n.Here)-1])
 		n.Here[r] = &Here{
 			Shape:  s,
 			ZIndex: zi,
