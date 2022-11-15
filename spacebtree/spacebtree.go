@@ -126,7 +126,9 @@ func (n *Node) Get(v int) (result []shared.Shape) {
 	}
 	if result == nil {
 		for _, e := range n.Here {
-			if n.Value >= v {
+			if n.Value >= v && e.Type != Begin {
+				result = append(result, e.Shape)
+			} else if n.Value <= v && e.Type != End {
 				result = append(result, e.Shape)
 			}
 		}
