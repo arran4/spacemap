@@ -1,4 +1,4 @@
-package btree
+package spacebtree
 
 import (
 	"spacemap/shared"
@@ -25,7 +25,10 @@ type Node struct {
 }
 
 func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, rightMost bool) *Node {
-	zi := len(n.Here)
+	var zi int
+	if n != nil {
+		zi = len(n.Here)
+	}
 	if zIndex != nil {
 		zi = *zIndex
 	}
@@ -39,9 +42,10 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 			leftMost = false
 		}
 		if rightMost {
-			r = NewNode(from, s, End, zi)
+			r = NewNode(to, s, End, zi)
 			if lm != nil {
 				lm.Children[1] = r
+				r = lm
 			}
 			rightMost = false
 		}
