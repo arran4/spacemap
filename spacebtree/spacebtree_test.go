@@ -43,7 +43,7 @@ func TestSpaceBTreeAdd(t *testing.T) {
 	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
 	rect2 := shared.NewRectangle(40, 40, 60, 60, shared.Name("rect2"))
 	rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
-	//rect4 := shared.NewRectangle(60, 60, 100, 100)
+	rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
 	for _, test := range []struct {
 		Name             string
 		SpaceMap         func() *SpaceMap
@@ -77,8 +77,11 @@ func TestSpaceBTreeAdd(t *testing.T) {
 							NewTNode(60,
 								nil,
 								nil,
-								NewTHere(rect2, 0, End)),
-							NewTHere(rect2, 0, Begin),
+								NewTHere(rect1, 0, Middle),
+								NewTHere(rect2, 1, End),
+							),
+							NewTHere(rect1, 0, Middle),
+							NewTHere(rect2, 1, Begin),
 						),
 						nil,
 						NewTHere(rect1, 0, End)),
@@ -92,8 +95,11 @@ func TestSpaceBTreeAdd(t *testing.T) {
 							NewTNode(60,
 								nil,
 								nil,
-								NewTHere(rect2, 0, End)),
-							NewTHere(rect2, 0, Begin),
+								NewTHere(rect1, 0, Middle),
+								NewTHere(rect2, 1, End),
+							),
+							NewTHere(rect1, 0, Middle),
+							NewTHere(rect2, 1, Begin),
 						),
 						nil,
 						NewTHere(rect1, 0, End)),
@@ -137,10 +143,42 @@ func TestSpaceBTreeAdd(t *testing.T) {
 				),
 			),
 		},
-		//{
-		//	Name:     "rect1, rect4",
-		//	SpaceMap: NSM(rect1, rect4),
-		//},
+		{
+			Name:     "rect1, rect4",
+			SpaceMap: NSM(rect1, rect4),
+			ExpectedSpaceMap: NewTSpaceMap(
+				NewTNode(10,
+					nil,
+					NewTNode(100,
+						NewTNode(60,
+							nil,
+							nil,
+							NewTHere(rect1, 0, Middle),
+							NewTHere(rect4, 1, Begin),
+						),
+						nil,
+						NewTHere(rect1, 0, End),
+						NewTHere(rect4, 1, End),
+					),
+					NewTHere(rect1, 0, Begin),
+				),
+				NewTNode(10,
+					nil,
+					NewTNode(100,
+						NewTNode(60,
+							nil,
+							nil,
+							NewTHere(rect1, 0, Middle),
+							NewTHere(rect4, 1, Begin),
+						),
+						nil,
+						NewTHere(rect1, 0, End),
+						NewTHere(rect4, 1, End),
+					),
+					NewTHere(rect1, 0, Begin),
+				),
+			),
+		},
 		//{
 		//	Name:     "rect1, rect2, rect3",
 		//	SpaceMap: NSM(rect1, rect3),

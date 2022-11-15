@@ -35,6 +35,14 @@ func (h *Here) String() string {
 	return fmt.Sprintf("Here(%s, Z:%d, Type:%s)", h.Shape, h.ZIndex, h.Type)
 }
 
+func (h *Here) Copy() *Here {
+	return &Here{
+		Shape:  h.Shape,
+		ZIndex: h.ZIndex,
+		Type:   h.Type,
+	}
+}
+
 var _ fmt.Stringer = (*Here)(nil)
 
 type Node struct {
@@ -43,26 +51,19 @@ type Node struct {
 	Children [2]*Node
 }
 
-func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, rightMost bool) *Node {
-	var zi int
-	if n != nil {
-		zi = len(n.Here)
-	}
-	if zIndex != nil {
-		zi = *zIndex
-	}
+func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, rightMost bool, parent *Node) *Node {
 
 	if n == nil {
 		var r *Node
 		if leftMost || rightMost {
 			var lm *Node
 			if leftMost {
-				r = NewNode(from, s, Begin, zi)
+				r = NewNode(from, s, Begin, zIndex, parent)
 				lm = r
 				leftMost = false
 			}
 			if rightMost {
-				r = NewNode(to, s, End, zi)
+				r = NewNode(to, s, End, zIndex, parent)
 				if lm != nil {
 					lm.Children[1] = r
 					r = lm
@@ -74,25 +75,32 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 	}
 
 	if n.Value == from && leftMost {
-		n.InsertHere(zi, s, Begin)
+		n.InsertHere(zIndex, s, Begin)
 		leftMost = false
 	} else if n.Value == to && rightMost {
-		n.InsertHere(zi, s, End)
+		n.InsertHere(zIndex, s, End)
 		rightMost = false
 	} else if from < n.Value && n.Value < to {
-		n.InsertHere(zi, s, Middle)
+		n.InsertHere(zIndex, s, Middle)
 	}
 
 	if n.Value > from {
-		n.Children[0] = n.Children[0].AddBetween(from, to, s, zIndex, leftMost, rightMost && n.Value >= to)
+		n.Children[0] = n.Children[0].AddBetween(from, to, s, zIndex, leftMost, rightMost && n.Value >= to, n)
 	}
 	if n.Value < to {
-		n.Children[1] = n.Children[1].AddBetween(from, to, s, zIndex, leftMost && n.Value <= from, rightMost)
+		n.Children[1] = n.Children[1].AddBetween(from, to, s, zIndex, leftMost && n.Value <= from, rightMost, n)
 	}
 	return n
 }
 
-func (n *Node) InsertHere(zi int, s shared.Shape, t Type) {
+func (n *Node) InsertHere(zIndex *int, s shared.Shape, t Type) {
+	var zi int
+	if n != nil {
+		zi = len(n.Here)
+	}
+	if zIndex != nil {
+		zi = *zIndex
+	}
 	r := 0
 	for ; r < len(n.Here) && n.Here[r].ZIndex < zi; r++ {
 	}
@@ -126,17 +134,34 @@ func (n *Node) Get(v int) (result []shared.Shape) {
 	return
 }
 
-func NewNode(p int, s shared.Shape, hType Type, zi int) *Node {
+func NewNode(p int, s shared.Shape, hType Type, zIndex *int, parent *Node) *Node {
+	var here []*Here
+	if parent != nil {
+		for _, ph := range parent.Here {
+			if ph.Shape == s {
+				continue
+			}
+			h := ph.Copy()
+			h.Type = Middle
+			switch ph.Type {
+			case Middle:
+				here = append(here, h)
+			case End:
+				if p < parent.Value {
+					here = append(here, h)
+				}
+			case Begin:
+				if p > parent.Value {
+					here = append(here, h)
+				}
+			}
+		}
+	}
 	nn := &Node{
 		Value: p,
-		Here: []*Here{
-			{
-				Shape:  s,
-				ZIndex: zi,
-				Type:   hType,
-			},
-		},
+		Here:  here,
 	}
+	nn.InsertHere(zIndex, s, hType)
 	return nn
 }
 
@@ -154,8 +179,8 @@ func (m *SpaceMap) AddAll(shapes ...shared.Shape) *SpaceMap {
 
 func (m *SpaceMap) Add(shape shared.Shape) *SpaceMap {
 	b := shape.Bounds()
-	m.VTree = m.VTree.AddBetween(b.Min.Y, b.Max.Y, shape, nil, true, true)
-	m.HTree = m.HTree.AddBetween(b.Min.X, b.Max.X, shape, nil, true, true)
+	m.VTree = m.VTree.AddBetween(b.Min.Y, b.Max.Y, shape, nil, true, true, nil)
+	m.HTree = m.HTree.AddBetween(b.Min.X, b.Max.X, shape, nil, true, true, nil)
 	return m
 }
 
