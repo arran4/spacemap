@@ -13,6 +13,32 @@ func NSM(shapes ...shared.Shape) func() *SpaceMap {
 	}
 }
 
+func NewTSpaceMap(vTree *Node, hTree *Node) *SpaceMap {
+	return &SpaceMap{
+		VTree: vTree,
+		HTree: hTree,
+	}
+}
+
+func NewTNode(value int, leftNode, rightNode *Node, heres ...*Here) *Node {
+	return &Node{
+		Value: value,
+		Here:  heres,
+		Children: [2]*Node{
+			leftNode,
+			rightNode,
+		},
+	}
+}
+
+func NewTHere(shape shared.Shape, z int, t Type) *Here {
+	return &Here{
+		Shape:  shape,
+		ZIndex: z,
+		Type:   t,
+	}
+}
+
 func TestSpaceBTreeAdd(t *testing.T) {
 	rect1 := shared.NewRectangle(10, 10, 100, 100)
 	//rect2 := shared.NewRectangle(40, 40, 60, 60)
@@ -26,56 +52,18 @@ func TestSpaceBTreeAdd(t *testing.T) {
 		{
 			Name:     "rect1",
 			SpaceMap: NSM(rect1),
-			ExpectedSpaceMap: &SpaceMap{
-				VTree: &Node{
-					Value: 10,
-					Here: []*Here{
-						{
-							Shape:  rect1,
-							ZIndex: 0,
-							Type:   Begin,
-						},
-					},
-					Children: [2]*Node{
-						nil,
-						{
-							Value: 100,
-							Here: []*Here{
-								{
-									Shape:  rect1,
-									ZIndex: 0,
-									Type:   End,
-								},
-							},
-							Children: [2]*Node{},
-						},
-					},
-				},
-				HTree: &Node{
-					Value: 10,
-					Here: []*Here{
-						{
-							Shape:  rect1,
-							ZIndex: 0,
-							Type:   Begin,
-						},
-					},
-					Children: [2]*Node{
-						nil,
-						{
-							Value: 100,
-							Here: []*Here{
-								{
-									Shape:  rect1,
-									ZIndex: 0,
-									Type:   End,
-								},
-							},
-							Children: [2]*Node{},
-						},
-					},
-				},
-			},
+			ExpectedSpaceMap: NewTSpaceMap(
+				NewTNode(10,
+					nil,
+					NewTNode(100, nil, nil, NewTHere(rect1, 0, End)),
+					NewTHere(rect1, 0, Begin),
+				),
+				NewTNode(10,
+					nil,
+					NewTNode(100, nil, nil, NewTHere(rect1, 0, End)),
+					NewTHere(rect1, 0, Begin),
+				),
+			),
 		},
 		//{
 		//	Name:     "rect1, rect2",
