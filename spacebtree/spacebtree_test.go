@@ -240,10 +240,10 @@ func TestSpaceBTreeAdd(t *testing.T) {
 }
 
 func TestSpaceBTreeEndToEnd(t *testing.T) {
-	rect1 := shared.NewRectangle(10, 10, 100, 100)
-	rect2 := shared.NewRectangle(40, 40, 60, 60)
-	rect3 := shared.NewRectangle(10, 10, 60, 60)
-	rect4 := shared.NewRectangle(60, 60, 100, 100)
+	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
+	rect2 := shared.NewRectangle(40, 40, 60, 60, shared.Name("rect2"))
+	rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
+	rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
 	for _, test := range []struct {
 		Name     string
 		Stack    []shared.Shape
