@@ -40,9 +40,9 @@ func NewTHere(shape shared.Shape, z int, t Type) *Here {
 }
 
 func TestSpaceBTreeAdd(t *testing.T) {
-	rect1 := shared.NewRectangle(10, 10, 100, 100)
-	//rect2 := shared.NewRectangle(40, 40, 60, 60)
-	//rect3 := shared.NewRectangle(10, 10, 60, 60)
+	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
+	rect2 := shared.NewRectangle(40, 40, 60, 60, shared.Name("rect2"))
+	rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
 	//rect4 := shared.NewRectangle(60, 60, 100, 100)
 	for _, test := range []struct {
 		Name             string
@@ -65,17 +65,85 @@ func TestSpaceBTreeAdd(t *testing.T) {
 				),
 			),
 		},
-		//{
-		//	Name:     "rect1, rect2",
-		//	SpaceMap: NSM(rect1, rect2),
-		//},
-		//{
-		//	Name:     "rect1, rect3",
-		//	SpaceMap: NSM(rect1, rect3),
-		//},
+		{
+			Name:     "rect1, rect2",
+			SpaceMap: NSM(rect1, rect2),
+			ExpectedSpaceMap: NewTSpaceMap(
+				NewTNode(10,
+					nil,
+					NewTNode(100,
+						NewTNode(40,
+							nil,
+							NewTNode(60,
+								nil,
+								nil,
+								NewTHere(rect2, 0, End)),
+							NewTHere(rect2, 0, Begin),
+						),
+						nil,
+						NewTHere(rect1, 0, End)),
+					NewTHere(rect1, 0, Begin),
+				),
+				NewTNode(10,
+					nil,
+					NewTNode(100,
+						NewTNode(40,
+							nil,
+							NewTNode(60,
+								nil,
+								nil,
+								NewTHere(rect2, 0, End)),
+							NewTHere(rect2, 0, Begin),
+						),
+						nil,
+						NewTHere(rect1, 0, End)),
+					NewTHere(rect1, 0, Begin),
+				),
+			),
+		},
+		{
+			Name:     "rect2, rect3",
+			SpaceMap: NSM(rect2, rect3),
+			ExpectedSpaceMap: NewTSpaceMap(
+				NewTNode(40,
+					NewTNode(10,
+						nil,
+						nil,
+						NewTHere(rect3, 0, Begin),
+					),
+					NewTNode(60,
+						nil,
+						nil,
+						NewTHere(rect3, 1, End),
+						NewTHere(rect2, 0, End),
+					),
+					NewTHere(rect3, 1, Middle),
+					NewTHere(rect2, 0, Begin),
+				),
+				NewTNode(40,
+					NewTNode(10,
+						nil,
+						nil,
+						NewTHere(rect3, 0, Begin),
+					),
+					NewTNode(60,
+						nil,
+						nil,
+						NewTHere(rect3, 1, End),
+						NewTHere(rect2, 0, End),
+					),
+					NewTHere(rect3, 1, Middle),
+					NewTHere(rect2, 0, Begin),
+				),
+			),
+		},
 		//{
 		//	Name:     "rect1, rect4",
 		//	SpaceMap: NSM(rect1, rect4),
+		//},
+		//{
+		//	Name:     "rect1, rect2, rect3",
+		//	SpaceMap: NSM(rect1, rect3),
 		//},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
