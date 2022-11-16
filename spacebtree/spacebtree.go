@@ -60,7 +60,6 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 			if leftMost {
 				r = NewNode(from, s, Begin, zIndex, parent)
 				lm = r
-				leftMost = false
 			}
 			if rightMost {
 				r = NewNode(to, s, End, zIndex, parent)
@@ -68,7 +67,6 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 					lm.Children[1] = r
 					r = lm
 				}
-				rightMost = false
 			}
 		}
 		return r
