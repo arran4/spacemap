@@ -61,9 +61,6 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 				r = NewNode(from, s, Begin, zIndex, parent, depth)
 				if rightMost {
 					var nDepth = depth
-					if depth >= 0 {
-						nDepth = depth + 1
-					}
 					r.Children[1] = r.Children[1].AddBetween(from, to, s, zIndex, false, rightMost, r, nDepth)
 				}
 			} else if rightMost {
@@ -266,7 +263,7 @@ func (n *Node) HorizontalRotate(direction Direction) *Node {
 
 func (n *Node) RecalculateDepth(depth int) int {
 	if n == nil {
-		return depth
+		return depth - 1
 	}
 	var ld int
 	var rd int

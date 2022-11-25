@@ -319,7 +319,7 @@ func TestSpaceBTreeAdd(t *testing.T) {
 
 func balancedDepthTest(n *Node, i int, t *testing.T, p []int) int {
 	if n == nil {
-		return i
+		return i - 1
 	}
 	p = append(p, n.Value)
 	lr := balancedDepthTest(n.Children[0], i+1, t, p)
@@ -528,17 +528,17 @@ func TestNode_AvlBalance(t *testing.T) {
 		{
 			name: "Don't disorder",
 			node: &Node{
-				Value: 40, MaxDepth: 2,
+				Value: 40, MaxDepth: 1,
 				Children: [2]*Node{
-					{Value: 10, MaxDepth: 2},
-					{Value: 60, MaxDepth: 2},
+					{Value: 10, MaxDepth: 1},
+					{Value: 60, MaxDepth: 1},
 				},
 			},
 			want: &Node{
-				Value: 40, MaxDepth: 2,
+				Value: 40, MaxDepth: 1,
 				Children: [2]*Node{
-					{Value: 10, MaxDepth: 2},
-					{Value: 60, MaxDepth: 2},
+					{Value: 10, MaxDepth: 1},
+					{Value: 60, MaxDepth: 1},
 				},
 			},
 		},
@@ -546,17 +546,17 @@ func TestNode_AvlBalance(t *testing.T) {
 			name: "Right right",
 			node: &Node{
 				Value:    10,
-				MaxDepth: 3,
+				MaxDepth: 2,
 				Children: [2]*Node{
 					nil,
 					{
 						Value:    40,
-						MaxDepth: 3,
+						MaxDepth: 2,
 						Children: [2]*Node{
 							nil,
 							{
 								Value:    60,
-								MaxDepth: 3,
+								MaxDepth: 2,
 								Children: [2]*Node{
 									nil,
 									nil,
@@ -567,10 +567,10 @@ func TestNode_AvlBalance(t *testing.T) {
 				},
 			},
 			want: &Node{
-				Value: 40, MaxDepth: 2,
+				Value: 40, MaxDepth: 1,
 				Children: [2]*Node{
-					{Value: 10, MaxDepth: 2},
-					{Value: 60, MaxDepth: 2},
+					{Value: 10, MaxDepth: 1},
+					{Value: 60, MaxDepth: 1},
 				},
 			},
 		},
@@ -578,16 +578,16 @@ func TestNode_AvlBalance(t *testing.T) {
 			name: "Right left",
 			node: &Node{
 				Value:    10,
-				MaxDepth: 3,
+				MaxDepth: 2,
 				Children: [2]*Node{
 					nil,
 					{
 						Value:    60,
-						MaxDepth: 3,
+						MaxDepth: 2,
 						Children: [2]*Node{
 							{
 								Value:    40,
-								MaxDepth: 3,
+								MaxDepth: 2,
 								Children: [2]*Node{
 									nil,
 									nil,
@@ -599,10 +599,10 @@ func TestNode_AvlBalance(t *testing.T) {
 				},
 			},
 			want: &Node{
-				Value: 40, MaxDepth: 2,
+				Value: 40, MaxDepth: 1,
 				Children: [2]*Node{
-					{Value: 10, MaxDepth: 2},
-					{Value: 60, MaxDepth: 2},
+					{Value: 10, MaxDepth: 1},
+					{Value: 60, MaxDepth: 1},
 				},
 			},
 		},
@@ -610,15 +610,15 @@ func TestNode_AvlBalance(t *testing.T) {
 			name: "Left left",
 			node: &Node{
 				Value:    60,
-				MaxDepth: 3,
+				MaxDepth: 2,
 				Children: [2]*Node{
 					{
 						Value:    40,
-						MaxDepth: 3,
+						MaxDepth: 2,
 						Children: [2]*Node{
 							{
 								Value:    10,
-								MaxDepth: 3,
+								MaxDepth: 2,
 								Children: [2]*Node{
 									nil,
 									nil,
@@ -631,10 +631,10 @@ func TestNode_AvlBalance(t *testing.T) {
 				},
 			},
 			want: &Node{
-				Value: 40, MaxDepth: 2,
+				Value: 40, MaxDepth: 1,
 				Children: [2]*Node{
-					{Value: 10, MaxDepth: 2},
-					{Value: 60, MaxDepth: 2},
+					{Value: 10, MaxDepth: 1},
+					{Value: 60, MaxDepth: 1},
 				},
 			},
 		},
@@ -642,15 +642,15 @@ func TestNode_AvlBalance(t *testing.T) {
 			name: "Left right",
 			node: &Node{
 				Value:    60,
-				MaxDepth: 3,
+				MaxDepth: 2,
 				Children: [2]*Node{
 					{
 						Value:    40,
-						MaxDepth: 3,
+						MaxDepth: 2,
 						Children: [2]*Node{
 							{
 								Value:    10,
-								MaxDepth: 3,
+								MaxDepth: 2,
 								Children: [2]*Node{
 									nil,
 									nil,
@@ -663,10 +663,10 @@ func TestNode_AvlBalance(t *testing.T) {
 				},
 			},
 			want: &Node{
-				Value: 40, MaxDepth: 2,
+				Value: 40, MaxDepth: 1,
 				Children: [2]*Node{
-					{Value: 10, MaxDepth: 2},
-					{Value: 60, MaxDepth: 2},
+					{Value: 10, MaxDepth: 1},
+					{Value: 60, MaxDepth: 1},
 				},
 			},
 		},
