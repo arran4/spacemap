@@ -10,24 +10,24 @@ import (
 )
 
 var (
-	benchShapes  = GenerateBenchShapes()
-	spaceLookups = GenerateSpaceLookups()
+	benchShapes  = GenerateBenchShapes(100)
+	spaceLookups = GenerateSpaceLookups(100)
 )
 
-func GenerateSpaceLookups() (result []image.Point) {
-	for top := 10; top < 100; top += 8 {
-		for left := 10; left < 100; left += 8 {
+func GenerateSpaceLookups(limit int) (result []image.Point) {
+	for top := 10; top < limit; top += 8 {
+		for left := 10; left < limit; left += 8 {
 			result = append(result, image.Pt(top, left))
 		}
 	}
 	return result
 }
 
-func GenerateBenchShapes() (result []shared.Shape) {
-	for top := 10; top < 100; top += 10 {
-		for left := 10; left < 100; left += 10 {
-			for right := left + 10; right < left+100; right += 10 {
-				for bottom := top + 10; bottom < 100+top; bottom += 10 {
+func GenerateBenchShapes(limit int) (result []shared.Shape) {
+	for top := 10; top < limit; top += 10 {
+		for left := 10; left < limit; left += 10 {
+			for right := left + 10; right < left+limit; right += 10 {
+				for bottom := top + 10; bottom < limit+top; bottom += 10 {
 					result = append(result, shared.NewRectangle(left, top, right, bottom))
 				}
 			}
@@ -47,6 +47,27 @@ var (
 	_ Interface[*spaceparition.Struct] = (*spaceparition.Struct)(nil)
 	_ Interface[*simplearray.Struct]   = (*simplearray.Struct)(nil)
 )
+
+func BenchmarkSpacePartitionAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		sm := spaceparition.New()
+		sm.AddAll(benchShapes...)
+	}
+}
+
+func BenchmarkSpaceBTreeAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		sm := spacebtree.New()
+		sm.AddAll(benchShapes...)
+	}
+}
+
+func BenchmarkSimpleArrayAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		sm := simplearray.New()
+		sm.AddAll(benchShapes...)
+	}
+}
 
 func BenchmarkSpacePartitionAddSearch(b *testing.B) {
 	for i := 0; i < b.N; i++ {
