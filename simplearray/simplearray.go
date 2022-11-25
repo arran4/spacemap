@@ -34,6 +34,16 @@ func (sm *Struct) Add(s shared.Shape) *Struct {
 	return sm
 }
 
+func (sm *Struct) Remove(s shared.Shape) *Struct {
+	for i := range sm.Shapes {
+		if sm.Shapes[i] == s {
+			sm.Shapes[i] = sm.Shapes[len(sm.Shapes)-1]
+			sm.Shapes = sm.Shapes[:len(sm.Shapes)-1]
+		}
+	}
+	return sm
+}
+
 func (sm *Struct) GetStackAt(x int, y int) (result []shared.Shape) {
 	var r []*Point
 	for i := range sm.Shapes {

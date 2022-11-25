@@ -4,7 +4,7 @@ import (
 	"image"
 	"spacemap/shared"
 	"spacemap/simplearray"
-	"spacemap/spacebtree"
+	"spacemap/space2trees"
 	"spacemap/spacepartition"
 	"testing"
 )
@@ -44,7 +44,7 @@ type Interface[T any] interface {
 }
 
 var (
-	_ Interface[*spacebtree.Struct]    = (*spacebtree.Struct)(nil)
+	_ Interface[*space2trees.Struct]   = (*space2trees.Struct)(nil)
 	_ Interface[*spaceparition.Struct] = (*spaceparition.Struct)(nil)
 	_ Interface[*simplearray.Struct]   = (*simplearray.Struct)(nil)
 )
@@ -58,7 +58,7 @@ func BenchmarkSpacePartitionAdd(b *testing.B) {
 
 func BenchmarkSpaceBTreeAdd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		sm := spacebtree.New()
+		sm := space2trees.New()
 		sm.AddAll(benchShapes...)
 	}
 }
@@ -82,7 +82,7 @@ func BenchmarkSpacePartitionAddSearch(b *testing.B) {
 
 func BenchmarkSpaceBTreeAddSearch(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		sm := spacebtree.New()
+		sm := space2trees.New()
 		sm.AddAll(benchShapes...)
 		for _, l := range spaceLookups {
 			sm.GetStackAt(l.X, l.Y)

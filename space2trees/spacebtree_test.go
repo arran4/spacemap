@@ -1,4 +1,4 @@
-package spacebtree
+package space2trees
 
 import (
 	"bytes"
