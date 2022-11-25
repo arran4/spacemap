@@ -289,8 +289,8 @@ func TestSpaceBTreeAdd(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			sm := test.SpaceMap()
 			if sm.Balanced {
-				depthTest(sm.VTree, 0, t, []int{})
-				depthTest(sm.HTree, 0, t, []int{})
+				balancedDepthTest(sm.VTree, 0, t, []int{})
+				balancedDepthTest(sm.HTree, 0, t, []int{})
 			}
 			if test.ExpectedSpaceMap != nil {
 				if s := cmp.Diff(sm, test.ExpectedSpaceMap); len(s) > 0 {
@@ -298,25 +298,32 @@ func TestSpaceBTreeAdd(t *testing.T) {
 				}
 			}
 			if t.Failed() {
-				t.Logf("Result VTree:\n%s", plotTree(sm.VTree, 3))
-				t.Logf("Result HTree:\n%s", plotTree(sm.HTree, 3))
+				value := func(n *Node) string {
+					return fmt.Sprintf("%d", n.Value)
+				}
+				depth := func(n *Node) string {
+					return fmt.Sprintf("%d", n.MaxDepth)
+				}
+				t.Logf("Result VTree:\n%s", plotTree(sm.VTree, 3, value))
+				t.Logf("Result HTree:\n%s", plotTree(sm.HTree, 3, value))
+				t.Logf("Result VTree.depth:\n%s", plotTree(sm.VTree, 3, depth))
+				t.Logf("Result HTree.depth:\n%s", plotTree(sm.HTree, 3, depth))
 				if test.ExpectedSpaceMap != nil {
-					t.Logf("Expected VTree:\n%s", plotTree(test.ExpectedSpaceMap.VTree, 3))
-					t.Logf("Expected HTree:\n%s", plotTree(test.ExpectedSpaceMap.HTree, 3))
+					t.Logf("Expected VTree:\n%s", plotTree(test.ExpectedSpaceMap.VTree, 3, value))
+					t.Logf("Expected HTree:\n%s", plotTree(test.ExpectedSpaceMap.HTree, 3, value))
 				}
 			}
 		})
 	}
 }
 
-func depthTest(n *Node, i int, t *testing.T, p []int) int {
+func balancedDepthTest(n *Node, i int, t *testing.T, p []int) int {
 	if n == nil {
 		return i
 	}
 	p = append(p, n.Value)
-	lr := depthTest(n.Children[0], i+1, t, p)
-	rr := depthTest(n.Children[1], i+1, t, p)
-	p = p[:len(p)-1]
+	lr := balancedDepthTest(n.Children[0], i+1, t, p)
+	rr := balancedDepthTest(n.Children[1], i+1, t, p)
 	b := Balance(rr - lr)
 	if b.Extreme() {
 		t.Errorf("%#v is unbalanced: %d vs %d", p, lr, rr)
@@ -325,10 +332,14 @@ func depthTest(n *Node, i int, t *testing.T, p []int) int {
 	if lr < rr {
 		m = rr
 	}
+	if n.MaxDepth != m {
+		t.Errorf("%#v is depth is wrong: .MaxDepth= %d vs max depth= %d", p, n.MaxDepth, m)
+	}
+	p = p[:len(p)-1]
 	return m
 }
 
-func plotTree(n *Node, w int) string {
+func plotTree(n *Node, w int, value func(*Node) string) string {
 	nextLine := []*Node{n}
 	var p [][]string
 	for c := 1; c > 0; {
@@ -348,7 +359,7 @@ func plotTree(n *Node, w int) string {
 			if en == nil {
 				continue
 			}
-			sl[i*2] = fmt.Sprintf("%d", en.Value)
+			sl[i*2] = value(en)
 			if en.Children[0] != nil {
 				c++
 				nextLine[i*2] = en.Children[0]
@@ -503,6 +514,174 @@ func TestNode_VerticalRotate(t *testing.T) {
 			tt.NF(tt.N, tt.direction)
 			if !reflect.DeepEqual(tt.N, tt.want) {
 				t.Errorf("VerticalRotate() = %v, want %v", tt.N, tt.want)
+			}
+		})
+	}
+}
+
+func TestNode_AvlBalance(t *testing.T) {
+	tests := []struct {
+		name string
+		node *Node
+		want *Node
+	}{
+		{
+			name: "Don't disorder",
+			node: &Node{
+				Value: 40, MaxDepth: 2,
+				Children: [2]*Node{
+					{Value: 10, MaxDepth: 2},
+					{Value: 60, MaxDepth: 2},
+				},
+			},
+			want: &Node{
+				Value: 40, MaxDepth: 2,
+				Children: [2]*Node{
+					{Value: 10, MaxDepth: 2},
+					{Value: 60, MaxDepth: 2},
+				},
+			},
+		},
+		{
+			name: "Right right",
+			node: &Node{
+				Value:    10,
+				MaxDepth: 3,
+				Children: [2]*Node{
+					nil,
+					{
+						Value:    40,
+						MaxDepth: 3,
+						Children: [2]*Node{
+							nil,
+							{
+								Value:    60,
+								MaxDepth: 3,
+								Children: [2]*Node{
+									nil,
+									nil,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &Node{
+				Value: 40, MaxDepth: 2,
+				Children: [2]*Node{
+					{Value: 10, MaxDepth: 2},
+					{Value: 60, MaxDepth: 2},
+				},
+			},
+		},
+		{
+			name: "Right left",
+			node: &Node{
+				Value:    10,
+				MaxDepth: 3,
+				Children: [2]*Node{
+					nil,
+					{
+						Value:    60,
+						MaxDepth: 3,
+						Children: [2]*Node{
+							{
+								Value:    40,
+								MaxDepth: 3,
+								Children: [2]*Node{
+									nil,
+									nil,
+								},
+							},
+							nil,
+						},
+					},
+				},
+			},
+			want: &Node{
+				Value: 40, MaxDepth: 2,
+				Children: [2]*Node{
+					{Value: 10, MaxDepth: 2},
+					{Value: 60, MaxDepth: 2},
+				},
+			},
+		},
+		{
+			name: "Left left",
+			node: &Node{
+				Value:    60,
+				MaxDepth: 3,
+				Children: [2]*Node{
+					{
+						Value:    40,
+						MaxDepth: 3,
+						Children: [2]*Node{
+							{
+								Value:    10,
+								MaxDepth: 3,
+								Children: [2]*Node{
+									nil,
+									nil,
+								},
+							},
+							nil,
+						},
+					},
+					nil,
+				},
+			},
+			want: &Node{
+				Value: 40, MaxDepth: 2,
+				Children: [2]*Node{
+					{Value: 10, MaxDepth: 2},
+					{Value: 60, MaxDepth: 2},
+				},
+			},
+		},
+		{
+			name: "Left right",
+			node: &Node{
+				Value:    60,
+				MaxDepth: 3,
+				Children: [2]*Node{
+					{
+						Value:    40,
+						MaxDepth: 3,
+						Children: [2]*Node{
+							{
+								Value:    10,
+								MaxDepth: 3,
+								Children: [2]*Node{
+									nil,
+									nil,
+								},
+							},
+							nil,
+						},
+					},
+					nil,
+				},
+			},
+			want: &Node{
+				Value: 40, MaxDepth: 2,
+				Children: [2]*Node{
+					{Value: 10, MaxDepth: 2},
+					{Value: 60, MaxDepth: 2},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.node.AvlBalance(0)
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf("AvlBalance() = \n%s", diff)
+			}
+			if t.Failed() {
+				value := func(n *Node) string {
+					return fmt.Sprintf("%d", n.Value)
+				}
+				t.Logf("Result VTree:\n%s", plotTree(got, 3, value))
 			}
 		})
 	}

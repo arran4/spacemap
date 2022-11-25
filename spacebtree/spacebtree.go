@@ -47,7 +47,7 @@ var _ fmt.Stringer = (*Here)(nil)
 
 type Node struct {
 	Value    int
-	Depth    int
+	MaxDepth int
 	Here     []*Here
 	Children [2]*Node
 }
@@ -69,7 +69,7 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 				r = NewNode(to, s, End, zIndex, parent, depth)
 				if lm != nil {
 					lm.Children[1] = r
-					lm.Depth = r.Depth
+					lm.MaxDepth = r.MaxDepth
 					r = lm
 				}
 			}
@@ -86,14 +86,15 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 	} else if from < n.Value && n.Value < to {
 		n.InsertHere(zIndex, s, Middle)
 	}
+	var nDepth = depth
 	if depth >= 0 {
-		depth++
+		nDepth = depth + 1
 	}
 	if n.Value > from {
-		n.Children[0] = n.Children[0].AddBetween(from, to, s, zIndex, leftMost, rightMost && n.Value >= to, n, depth)
+		n.Children[0] = n.Children[0].AddBetween(from, to, s, zIndex, leftMost, rightMost && n.Value >= to, n, nDepth)
 	}
 	if n.Value < to {
-		n.Children[1] = n.Children[1].AddBetween(from, to, s, zIndex, leftMost && n.Value <= from, rightMost, n, depth)
+		n.Children[1] = n.Children[1].AddBetween(from, to, s, zIndex, leftMost && n.Value <= from, rightMost, n, nDepth)
 	}
 	r := n
 	if depth >= 0 {
@@ -151,6 +152,7 @@ func (n *Node) Get(v int) (result []shared.Shape) {
 }
 
 func (n *Node) AvlBalance(depth int) *Node {
+	_ = n.RecalculateDepth(-1)
 	nBal := n.Balance()
 	var cBal Balance = Balanced
 	switch nBal {
@@ -161,12 +163,12 @@ func (n *Node) AvlBalance(depth int) *Node {
 	default:
 		return n
 	}
-	if !cBal.Same(nBal) {
+	if !cBal.SameSide(nBal) {
 		d := 0
-		if nBal.Right() {
+		if cBal.Left() {
 			d = 1
 		}
-		n.Children[d] = n.Children[d].VerticalRotate(Direction(nBal))
+		n.Children[d] = n.Children[d].VerticalRotate(Direction(cBal))
 	}
 	r := n.VerticalRotate(Direction(nBal))
 	_ = r.RecalculateDepth(depth)
@@ -184,10 +186,7 @@ func (b Balance) Right() bool {
 	return b > 0
 }
 
-func (b Balance) Same(b2 Balance) bool {
-	if b == 0 && b2 == 0 {
-		return true
-	}
+func (b Balance) SameSide(b2 Balance) bool {
 	if b < 0 && b2 < 0 {
 		return true
 	}
@@ -218,10 +217,10 @@ func (n *Node) Balance() Balance {
 	var lDepth int
 	var rDepth int
 	if n.Children[0] != nil {
-		lDepth = n.Children[0].Depth
+		lDepth = n.Children[0].MaxDepth
 	}
 	if n.Children[1] != nil {
-		rDepth = n.Children[1].Depth
+		rDepth = n.Children[1].MaxDepth
 	}
 	nb := rDepth - lDepth
 	switch nb {
@@ -263,17 +262,28 @@ func (n *Node) HorizontalRotate(direction Direction) *Node {
 	return r
 }
 
-func (n *Node) RecalculateDepth(balance int) int {
+func (n *Node) RecalculateDepth(depth int) int {
 	if n == nil {
-		return balance
+		return depth
 	}
-	ld := n.Children[0].RecalculateDepth(balance + 1)
-	rd := n.Children[1].RecalculateDepth(balance + 1)
-	n.Depth = ld
-	if n.Depth < rd {
-		n.Depth = rd
+	var ld int
+	var rd int
+	if depth >= 0 {
+		ld = n.Children[0].RecalculateDepth(depth + 1)
+		rd = n.Children[1].RecalculateDepth(depth + 1)
+	} else {
+		if n.Children[0] != nil {
+			ld = n.Children[0].MaxDepth
+		}
+		if n.Children[1] != nil {
+			rd = n.Children[1].MaxDepth
+		}
 	}
-	return n.Depth
+	n.MaxDepth = ld
+	if n.MaxDepth < rd {
+		n.MaxDepth = rd
+	}
+	return n.MaxDepth
 }
 
 func NewNode(p int, s shared.Shape, hType Type, zIndex *int, parent *Node, depth int) *Node {
@@ -304,7 +314,7 @@ func NewNode(p int, s shared.Shape, hType Type, zIndex *int, parent *Node, depth
 		Here:  here,
 	}
 	if depth >= 0 {
-		nn.Depth = depth + 1
+		nn.MaxDepth = depth + 1
 	}
 	nn.InsertHere(zIndex, s, hType)
 	return nn
