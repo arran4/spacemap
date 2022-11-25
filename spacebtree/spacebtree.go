@@ -57,22 +57,21 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 	if n == nil {
 		var r *Node
 		if leftMost || rightMost {
-			var lm *Node
 			if leftMost {
 				r = NewNode(from, s, Begin, zIndex, parent, depth)
-				lm = r
-			}
-			if rightMost {
-				if lm != nil && depth >= 0 {
-					depth++
+				if rightMost {
+					var nDepth = depth
+					if depth >= 0 {
+						nDepth = depth + 1
+					}
+					r.Children[1] = r.Children[1].AddBetween(from, to, s, zIndex, false, rightMost, r, nDepth)
 				}
+			} else if rightMost {
 				r = NewNode(to, s, End, zIndex, parent, depth)
-				if lm != nil {
-					lm.Children[1] = r
-					lm.MaxDepth = r.MaxDepth
-					r = lm
-				}
 			}
+		}
+		if depth >= 0 {
+			r = r.AvlBalance(depth)
 		}
 		return r
 	}
@@ -152,7 +151,10 @@ func (n *Node) Get(v int) (result []shared.Shape) {
 }
 
 func (n *Node) AvlBalance(depth int) *Node {
-	_ = n.RecalculateDepth(-1)
+	if n == nil {
+		return nil
+	}
+	_ = n.RecalculateDepth(depth)
 	nBal := n.Balance()
 	var cBal Balance = Balanced
 	switch nBal {
