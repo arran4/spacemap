@@ -197,6 +197,15 @@ func (b Balance) Same(b2 Balance) bool {
 	return false
 }
 
+func (b Balance) Extreme() bool {
+	switch b {
+	case Left, Right:
+		return true
+	default:
+		return false
+	}
+}
+
 const (
 	Left      Balance = -2
 	LeftLean  Balance = -1
@@ -237,11 +246,14 @@ func (n *Node) VerticalRotate(direction Direction) *Node {
 		c, cs = cs, c
 	}
 	var r *Node
+	if n == nil || n.Children[c] == nil || n.Children[c].Children[cs] == nil {
+		return n
+	}
 	r, n.Children[c], n.Children[c].Children[cs] = n.Children[c], n.Children[c].Children[cs], n
 	return r
 }
 
-func (n *Node) HorizontalRotate(direction int) *Node {
+func (n *Node) HorizontalRotate(direction Direction) *Node {
 	n1, n2 := 0, 1
 	if direction <= 0 {
 		n1, n2 = n2, n1

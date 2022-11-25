@@ -1,6 +1,8 @@
 package spacebtree
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"image"
 	"reflect"
@@ -430,11 +432,76 @@ func TestSpaceBTreeAdd(t *testing.T) {
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			sm := test.SpaceMap()
+			depthTest(sm.VTree, 0, t, []int{})
+			depthTest(sm.HTree, 0, t, []int{})
 			if s := cmp.Diff(sm, test.ExpectedSpaceMap); len(s) > 0 {
 				t.Errorf("Failed stacks differ: %s", s)
 			}
+			if t.Failed() {
+				t.Logf("VTree:\n%s", plotTree(sm.VTree, 3))
+				t.Logf("HTree:\n%s", plotTree(sm.HTree, 3))
+			}
 		})
 	}
+}
+
+func depthTest(n *Node, i int, t *testing.T, p []int) int {
+	if n == nil {
+		return i
+	}
+	p = append(p, n.Value)
+	lr := depthTest(n.Children[0], i+1, t, p)
+	rr := depthTest(n.Children[1], i+1, t, p)
+	p = p[:len(p)-1]
+	b := Balance(rr - lr)
+	if b.Extreme() {
+		t.Errorf("%#v is unbalanced: %d vs %d", p, lr, rr)
+	}
+	m := lr
+	if lr < rr {
+		m = rr
+	}
+	return m
+}
+
+func plotTree(n *Node, w int) string {
+	nextLine := []*Node{n}
+	var p [][]string
+	for c := 1; c > 0; {
+		c = 0
+		line := nextLine
+		nextLine = make([]*Node, len(line)*2)
+		strl := len(line)*2 - 1
+		for pli := range p {
+			ns := make([]string, strl)
+			for i, v := range p[pli] {
+				ns[i*2+1] = v
+			}
+			p[pli] = ns
+		}
+		sl := make([]string, strl, strl)
+		for i, en := range line {
+			if en == nil {
+				continue
+			}
+			sl[i*2] = fmt.Sprintf("%d", en.Value)
+			if en.Children[0] != nil {
+				c++
+				nextLine[i*2] = en.Children[0]
+			}
+			if en.Children[1] != nil {
+				c++
+				nextLine[i*2+1] = en.Children[1]
+			}
+		}
+		p = append(p, sl)
+	}
+	b := &bytes.Buffer{}
+	for _, pl := range p {
+		fmt.Fprintf(b, fmt.Sprintf("%%%ds ", w), pl)
+		b.WriteString("\n")
+	}
+	return b.String()
 }
 
 func TestSpaceBTreeEndToEnd(t *testing.T) {
