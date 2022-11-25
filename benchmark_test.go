@@ -2,9 +2,9 @@ package spacemap
 
 import (
 	"image"
-	spacemap "spacemap/array"
 	"spacemap/shared"
 	"spacemap/spacebtree"
+	spacemap "spacemap/spacepartition"
 	"testing"
 )
 
