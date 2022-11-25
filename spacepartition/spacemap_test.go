@@ -9,9 +9,9 @@ import (
 	"testing"
 )
 
-func NSM(shapes ...shared.Shape) func() *SpaceMap {
-	return func() *SpaceMap {
-		return NewSpaceMap().AddAll(shapes...)
+func NSM(shapes ...shared.Shape) func() *Struct {
+	return func() *Struct {
+		return New().AddAll(shapes...)
 	}
 }
 
@@ -24,7 +24,7 @@ func TestSpaceMap(t *testing.T) {
 		Name      string
 		Stack     []shared.Shape
 		Position  image.Point
-		SpaceMap  func() *SpaceMap
+		SpaceMap  func() *Struct
 		NumberMap [][]int
 	}{
 		{
@@ -123,7 +123,7 @@ func TestSpaceMap(t *testing.T) {
 	}
 }
 
-func NumberMapper(spaceMap *SpaceMap) (result [][]int) {
+func NumberMapper(spaceMap *Struct) (result [][]int) {
 	result = make([][]int, len(spaceMap.HSplits))
 	for hi, h := range spaceMap.HSplits {
 		result[hi] = make([]int, len(spaceMap.VSplits))
@@ -136,7 +136,7 @@ func NumberMapper(spaceMap *SpaceMap) (result [][]int) {
 	return
 }
 
-func LogStructure(t *testing.T, spaceMap *SpaceMap) {
+func LogStructure(t *testing.T, spaceMap *Struct) {
 	b := strings.Builder{}
 	b.WriteString("\n____\t")
 	for _, v := range spaceMap.VSplits {
@@ -157,7 +157,7 @@ func LogStructure(t *testing.T, spaceMap *SpaceMap) {
 	t.Log(b.String())
 }
 
-func LogStructureContents(t *testing.T, spaceMap *SpaceMap) {
+func LogStructureContents(t *testing.T, spaceMap *Struct) {
 	b := strings.Builder{}
 	const format = "%40s"
 	b.WriteString(fmt.Sprintf("\n"+format, "____"))

@@ -10,27 +10,27 @@ import (
 	"testing"
 )
 
-func NSMBalanced(shapes ...shared.Shape) func() *SpaceMap {
-	return func() *SpaceMap {
-		return NewSpaceMap().AddAll(shapes...)
+func NSMBalanced(shapes ...shared.Shape) func() *Struct {
+	return func() *Struct {
+		return New().AddAll(shapes...)
 	}
 }
 
-func NSMUnbalanced(shapes ...shared.Shape) func() *SpaceMap {
-	return func() *SpaceMap {
-		return NewSpaceMap().Unbalance().AddAll(shapes...)
+func NSMUnbalanced(shapes ...shared.Shape) func() *Struct {
+	return func() *Struct {
+		return New().Unbalance().AddAll(shapes...)
 	}
 }
 
-func NewTUnbalancedSpaceMap(vTree *Node, hTree *Node) *SpaceMap {
-	return &SpaceMap{
+func NewTUnbalancedSpaceMap(vTree *Node, hTree *Node) *Struct {
+	return &Struct{
 		VTree: vTree,
 		HTree: hTree,
 	}
 }
 
-func NewTBalancedSpaceMap(vTree *Node, hTree *Node) *SpaceMap {
-	s := &SpaceMap{
+func NewTBalancedSpaceMap(vTree *Node, hTree *Node) *Struct {
+	s := &Struct{
 		VTree:    vTree,
 		HTree:    hTree,
 		Balanced: true,
@@ -66,8 +66,8 @@ func TestSpaceBTreeAdd(t *testing.T) {
 	rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
 	for _, test := range []struct {
 		Name             string
-		SpaceMap         func() *SpaceMap
-		ExpectedSpaceMap *SpaceMap
+		SpaceMap         func() *Struct
+		ExpectedSpaceMap *Struct
 	}{
 		{
 			Name:     "unbalanced rect1",
@@ -388,7 +388,7 @@ func TestSpaceBTreeEndToEnd(t *testing.T) {
 		Name     string
 		Stack    []shared.Shape
 		Position image.Point
-		SpaceMap func() *SpaceMap
+		SpaceMap func() *Struct
 	}{
 		{
 			Name:     "Hit",

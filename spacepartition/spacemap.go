@@ -44,20 +44,20 @@ func SC(HSplit *Split, VSplit *Split) SplitCoordination {
 	return coordination
 }
 
-type SpaceMap struct {
+type Struct struct {
 	VSplits []*Split
 	HSplits []*Split
 	Stacks  map[SplitCoordination][]shared.Shape
 }
 
-func (m *SpaceMap) AddAll(shapes ...shared.Shape) *SpaceMap {
+func (m *Struct) AddAll(shapes ...shared.Shape) *Struct {
 	for _, shape := range shapes {
 		m.Add(shape)
 	}
 	return m
 }
 
-func (m *SpaceMap) Add(shape shared.Shape) *SpaceMap {
+func (m *Struct) Add(shape shared.Shape) *Struct {
 	b := shape.Bounds()
 	minxi, minyi := m.GetXYPositions(b.Min)
 	maxxi, maxyi := m.GetXYPositions(b.Max)
@@ -187,7 +187,7 @@ func (m *SpaceMap) Add(shape shared.Shape) *SpaceMap {
 	return m
 }
 
-func (m *SpaceMap) GetXYPositions(p image.Point) (int, int) {
+func (m *Struct) GetXYPositions(p image.Point) (int, int) {
 	minxi := sort.Search(len(m.HSplits), func(i int) bool {
 		return m.HSplits[i].Position >= p.X
 	})
@@ -197,7 +197,7 @@ func (m *SpaceMap) GetXYPositions(p image.Point) (int, int) {
 	return minxi, minyi
 }
 
-func (m *SpaceMap) GetStackAt(x int, y int) []shared.Shape {
+func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
 	xi, yi := m.GetXYPositions(image.Point{x, y})
 	if xi >= 0 && yi >= 0 && xi <= len(m.HSplits) && yi <= len(m.VSplits) {
 		var hs *Split = nil
@@ -225,8 +225,8 @@ func (m *SpaceMap) GetStackAt(x int, y int) []shared.Shape {
 	return []shared.Shape{}
 }
 
-func NewSpaceMap() *SpaceMap {
-	return &SpaceMap{
+func New() *Struct {
+	return &Struct{
 		VSplits: []*Split{},
 		HSplits: []*Split{},
 		Stacks:  map[SplitCoordination][]shared.Shape{},

@@ -319,20 +319,20 @@ func NewNode(p int, s shared.Shape, hType Type, zIndex *int, parent *Node, depth
 	return nn
 }
 
-type SpaceMap struct {
+type Struct struct {
 	VTree    *Node
 	HTree    *Node
 	Balanced bool
 }
 
-func (m *SpaceMap) AddAll(shapes ...shared.Shape) *SpaceMap {
+func (m *Struct) AddAll(shapes ...shared.Shape) *Struct {
 	for _, shape := range shapes {
 		m.Add(shape)
 	}
 	return m
 }
 
-func (m *SpaceMap) Add(shape shared.Shape) *SpaceMap {
+func (m *Struct) Add(shape shared.Shape) *Struct {
 	b := shape.Bounds()
 	var balance = -1
 	if m.Balanced {
@@ -343,7 +343,7 @@ func (m *SpaceMap) Add(shape shared.Shape) *SpaceMap {
 	return m
 }
 
-func (m *SpaceMap) GetStackAt(x int, y int) []shared.Shape {
+func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
 	xs := m.HTree.Get(x)
 	if len(xs) == 0 {
 		return []shared.Shape{}
@@ -365,13 +365,13 @@ func (m *SpaceMap) GetStackAt(x int, y int) []shared.Shape {
 	return result
 }
 
-func (m *SpaceMap) Unbalance() *SpaceMap {
+func (m *Struct) Unbalance() *Struct {
 	m.Balanced = false
 	return m
 }
 
-func NewSpaceMap() *SpaceMap {
-	return &SpaceMap{
+func New() *Struct {
+	return &Struct{
 		Balanced: true,
 	}
 }
