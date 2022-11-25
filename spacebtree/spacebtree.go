@@ -242,11 +242,11 @@ func (n *Node) Balance() Balance {
 
 func (n *Node) VerticalRotate(direction Direction) *Node {
 	c, cs := 0, 1
-	if direction < 0 {
+	if direction > 0 {
 		c, cs = cs, c
 	}
 	var r *Node
-	if n == nil || n.Children[c] == nil || n.Children[c].Children[cs] == nil {
+	if n == nil || n.Children[c] == nil {
 		return n
 	}
 	r, n.Children[c], n.Children[c].Children[cs] = n.Children[c], n.Children[c].Children[cs], n
