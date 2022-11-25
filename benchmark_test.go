@@ -39,6 +39,7 @@ func GenerateBenchShapes(limit int) (result []shared.Shape) {
 type Interface[T any] interface {
 	AddAll(...shared.Shape) T
 	Add(shared.Shape) T
+	Remove(shared.Shape) T
 	GetStackAt(x int, y int) []shared.Shape
 }
 
