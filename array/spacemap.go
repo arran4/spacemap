@@ -104,7 +104,7 @@ func (m *SpaceMap) Add(shape shared.Shape) *SpaceMap {
 				lhs = hs
 			}
 		} else {
-			m.VSplits[maxxi].BecauseOf = append(m.VSplits[maxxi].BecauseOf, shape)
+			m.VSplits[maxyi].BecauseOf = append(m.VSplits[maxyi].BecauseOf, shape)
 		}
 		if maxxhs[0] != nil {
 			for _, vs := range m.VSplits {
