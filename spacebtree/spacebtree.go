@@ -52,21 +52,21 @@ type Node struct {
 	Children [2]*Node
 }
 
-func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, rightMost bool, parent *Node, balance int) *Node {
+func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, rightMost bool, parent *Node, depth int) *Node {
 
 	if n == nil {
 		var r *Node
 		if leftMost || rightMost {
 			var lm *Node
 			if leftMost {
-				r = NewNode(from, s, Begin, zIndex, parent, balance)
+				r = NewNode(from, s, Begin, zIndex, parent, depth)
 				lm = r
 			}
 			if rightMost {
-				if lm != nil && balance >= 0 {
-					balance++
+				if lm != nil && depth >= 0 {
+					depth++
 				}
-				r = NewNode(to, s, End, zIndex, parent, balance)
+				r = NewNode(to, s, End, zIndex, parent, depth)
 				if lm != nil {
 					lm.Children[1] = r
 					lm.Depth = r.Depth
@@ -86,37 +86,18 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 	} else if from < n.Value && n.Value < to {
 		n.InsertHere(zIndex, s, Middle)
 	}
-	if balance >= 0 {
-		balance++
+	if depth >= 0 {
+		depth++
 	}
 	if n.Value > from {
-		n.Children[0] = n.Children[0].AddBetween(from, to, s, zIndex, leftMost, rightMost && n.Value >= to, n, balance)
+		n.Children[0] = n.Children[0].AddBetween(from, to, s, zIndex, leftMost, rightMost && n.Value >= to, n, depth)
 	}
 	if n.Value < to {
-		n.Children[1] = n.Children[1].AddBetween(from, to, s, zIndex, leftMost && n.Value <= from, rightMost, n, balance)
+		n.Children[1] = n.Children[1].AddBetween(from, to, s, zIndex, leftMost && n.Value <= from, rightMost, n, depth)
 	}
 	r := n
-	for balance >= 0 {
-		var ldepth int
-		var rdepth int
-		if r.Children[0] != nil {
-			ldepth = r.Children[0].Depth
-		}
-		if r.Children[1] != nil {
-			rdepth = r.Children[1].Depth
-		}
-		n.Depth = ldepth
-		if n.Depth < rdepth {
-			n.Depth = rdepth
-		}
-		if !(ldepth-rdepth > 1 || ldepth-rdepth < 0) {
-			break
-		}
-		rn := r.Rotate(ldepth - rdepth)
-		if rn == nil {
-			break
-		}
-		r = rn
+	if depth >= 0 {
+		r = r.AvlBalance(depth)
 	}
 	return r
 }
@@ -169,27 +150,113 @@ func (n *Node) Get(v int) (result []shared.Shape) {
 	return
 }
 
-func (n *Node) Rotate(direction int) *Node {
-	c, sb := 0, 1
-	if direction > 0 {
-		c, sb = sb, c
+func (n *Node) AvlBalance(depth int) *Node {
+	nBal := n.Balance()
+	var cBal Balance = Balanced
+	switch nBal {
+	case Left:
+		cBal = n.Children[0].Balance()
+	case Right:
+		cBal = n.Children[1].Balance()
+	default:
+		return n
 	}
-	if n.Children[c] == nil {
-		return nil
+	if !cBal.Same(nBal) {
+		d := 0
+		if nBal.Right() {
+			d = 1
+		}
+		n.Children[d] = n.Children[d].VerticalRotate(Direction(nBal))
 	}
-	depth := n.Depth
-	var r *Node
-	r, n.Children[c], n.Children[c].Children[sb] = n.Children[c], n.Children[c].Children[sb], n
-	r.RecalculateDepth(depth)
+	r := n.VerticalRotate(Direction(nBal))
+	_ = r.RecalculateDepth(depth)
 	return r
 }
 
-func (n *Node) RecalculateDepth(depth int) int {
-	if n == nil {
-		return depth
+type Direction int
+type Balance int
+
+func (b Balance) Left() bool {
+	return b < 0
+}
+
+func (b Balance) Right() bool {
+	return b > 0
+}
+
+func (b Balance) Same(b2 Balance) bool {
+	if b == 0 && b2 == 0 {
+		return true
 	}
-	ld := n.Children[0].RecalculateDepth(depth + 1)
-	rd := n.Children[1].RecalculateDepth(depth + 1)
+	if b < 0 && b2 < 0 {
+		return true
+	}
+	if b > 0 && b2 > 0 {
+		return true
+	}
+	return false
+}
+
+const (
+	Left      Balance = -2
+	LeftLean  Balance = -1
+	Balanced  Balance = 0
+	RightLean Balance = 1
+	Right     Balance = 2
+)
+
+func (n *Node) Balance() Balance {
+	var lDepth int
+	var rDepth int
+	if n.Children[0] != nil {
+		lDepth = n.Children[0].Depth
+	}
+	if n.Children[1] != nil {
+		rDepth = n.Children[1].Depth
+	}
+	nb := rDepth - lDepth
+	switch nb {
+	case 0:
+		return Balanced
+	case -1:
+		return LeftLean
+	case 1:
+		return RightLean
+	default:
+		if nb < 0 {
+			return Left
+		} else {
+			return Right
+		}
+	}
+}
+
+func (n *Node) VerticalRotate(direction Direction) *Node {
+	c, cs := 0, 1
+	if direction < 0 {
+		c, cs = cs, c
+	}
+	var r *Node
+	r, n.Children[c], n.Children[c].Children[cs] = n.Children[c], n.Children[c].Children[cs], n
+	return r
+}
+
+func (n *Node) HorizontalRotate(direction int) *Node {
+	n1, n2 := 0, 1
+	if direction <= 0 {
+		n1, n2 = n2, n1
+	}
+	var r *Node
+	r, n.Children[n1], n.Children[n2] = n.Children[n2], n.Children[n1], n
+	return r
+}
+
+func (n *Node) RecalculateDepth(balance int) int {
+	if n == nil {
+		return balance
+	}
+	ld := n.Children[0].RecalculateDepth(balance + 1)
+	rd := n.Children[1].RecalculateDepth(balance + 1)
 	n.Depth = ld
 	if n.Depth < rd {
 		n.Depth = rd

@@ -3,6 +3,7 @@ package spacebtree
 import (
 	"github.com/google/go-cmp/cmp"
 	"image"
+	"reflect"
 	"spacemap/shared"
 	"testing"
 )
@@ -507,6 +508,70 @@ func TestSpaceBTreeEndToEnd(t *testing.T) {
 			stack := sm.GetStackAt(test.Position.X, test.Position.Y)
 			if s := cmp.Diff(stack, test.Stack); len(s) > 0 {
 				t.Errorf("Failed stacks differ: %s", s)
+			}
+		})
+	}
+}
+
+func TestNode_VerticalRotate(t *testing.T) {
+	tests := []struct {
+		name      string
+		N         *Node
+		NF        func(r *Node, direction Direction)
+		direction Direction
+		want      *Node
+	}{
+		{
+			name: "Right",
+			N: &Node{
+				Value: 12,
+				Children: [2]*Node{
+					{
+						Value: 10,
+						Children: [2]*Node{
+							{
+								Value: 8,
+								Children: [2]*Node{
+									{Value: 4},
+									{Value: 9},
+								},
+							},
+							{Value: 11},
+						},
+					},
+					{Value: 14},
+				},
+			},
+			direction: 0,
+			want: &Node{
+				Value: 12,
+				Children: [2]*Node{
+					{
+						Value: 8,
+						Children: [2]*Node{
+							{Value: 4},
+							{
+								Value: 10,
+								Children: [2]*Node{
+									{Value: 9},
+									{Value: 11},
+								},
+							},
+						},
+					},
+					{Value: 14},
+				},
+			},
+			NF: func(r *Node, direction Direction) {
+				r.Children[0] = r.Children[0].VerticalRotate(direction)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.NF(tt.N, tt.direction)
+			if !reflect.DeepEqual(tt.N, tt.want) {
+				t.Errorf("VerticalRotate() = %v, want %v", tt.N, tt.want)
 			}
 		})
 	}
