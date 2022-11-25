@@ -1,4 +1,4 @@
-package spacemap
+package spaceparition
 
 import (
 	"fmt"

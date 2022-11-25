@@ -4,7 +4,7 @@ import (
 	"image"
 	"spacemap/shared"
 	"spacemap/spacebtree"
-	spacemap "spacemap/spacepartition"
+	"spacemap/spacepartition"
 	"testing"
 )
 
@@ -35,9 +35,20 @@ func GenerateBenchShapes() (result []shared.Shape) {
 	return result
 }
 
-func BenchmarkSpaceArrayAddSearch(b *testing.B) {
+type Interface[T Interface[T]] interface {
+	AddAll(...shared.Shape) T
+	Add(shared.Shape) T
+	GetStackAt(x int, y int) []shared.Shape
+}
+
+var (
+	_ Interface[*spacebtree.SpaceMap]    = (*spacebtree.SpaceMap)(nil)
+	_ Interface[*spaceparition.SpaceMap] = (*spaceparition.SpaceMap)(nil)
+)
+
+func BenchmarkSpacePartitionAddSearch(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		sm := spacemap.NewSpaceMap()
+		sm := spaceparition.NewSpaceMap()
 		sm.AddAll(benchShapes...)
 		for _, l := range spaceLookups {
 			sm.GetStackAt(l.X, l.Y)
