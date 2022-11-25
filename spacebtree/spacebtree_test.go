@@ -432,14 +432,18 @@ func TestSpaceBTreeAdd(t *testing.T) {
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			sm := test.SpaceMap()
-			depthTest(sm.VTree, 0, t, []int{})
-			depthTest(sm.HTree, 0, t, []int{})
+			if sm.Balanced {
+				depthTest(sm.VTree, 0, t, []int{})
+				depthTest(sm.HTree, 0, t, []int{})
+			}
 			if s := cmp.Diff(sm, test.ExpectedSpaceMap); len(s) > 0 {
 				t.Errorf("Failed stacks differ: %s", s)
 			}
 			if t.Failed() {
-				t.Logf("VTree:\n%s", plotTree(sm.VTree, 3))
-				t.Logf("HTree:\n%s", plotTree(sm.HTree, 3))
+				t.Logf("Result VTree:\n%s", plotTree(sm.VTree, 3))
+				t.Logf("Result HTree:\n%s", plotTree(sm.HTree, 3))
+				t.Logf("Expected VTree:\n%s", plotTree(test.ExpectedSpaceMap.VTree, 3))
+				t.Logf("Expected HTree:\n%s", plotTree(test.ExpectedSpaceMap.HTree, 3))
 			}
 		})
 	}
