@@ -693,10 +693,12 @@ func TestStruct_Remove(t *testing.T) {
 	rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
 	rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
 	tests := []struct {
-		name        string
-		Constructor func() *Struct
-		Expected    func() *Struct
-		shape       shared.Shape
+		name         string
+		Constructor  func() *Struct
+		Expected     func() *Struct
+		shape        shared.Shape
+		ScanExpected *int
+		ScanFor      shared.Shape
 	}{
 		{
 			name:        "Remove the only unbalanced",
@@ -765,9 +767,11 @@ func TestStruct_Remove(t *testing.T) {
 			},
 		},
 		{
-			name:        "Remove the first of 4 balanced",
-			Constructor: NSMBalanced(rect1, rect2, rect3, rect4),
-			shape:       rect1,
+			name:         "Remove the first of 4 balanced",
+			Constructor:  NSMBalanced(rect1, rect2, rect3, rect4),
+			shape:        rect1,
+			ScanFor:      rect1,
+			ScanExpected: PI(0),
 		},
 	}
 	for _, tt := range tests {
@@ -782,6 +786,11 @@ func TestStruct_Remove(t *testing.T) {
 				expected = tt.Expected()
 				if s := cmp.Diff(sm, expected); len(s) > 0 {
 					t.Errorf("Failed stacks differ: %s", s)
+				}
+			}
+			if tt.ScanExpected != nil {
+				if found := scanFor(sm, tt.ScanFor); found != *tt.ScanExpected {
+					t.Errorf("Failed scan for found %d when expecting %d of: %s", found, *tt.ScanExpected, tt.ScanFor)
 				}
 			}
 			if t.Failed() {
@@ -802,4 +811,30 @@ func TestStruct_Remove(t *testing.T) {
 			}
 		})
 	}
+}
+
+func scanFor(sm *Struct, scanFor shared.Shape) int {
+	r := 0
+	r += scanForInNode(sm.VTree, scanFor)
+	r += scanForInNode(sm.HTree, scanFor)
+	return r
+}
+
+func scanForInNode(tree *Node, shape shared.Shape) int {
+	if tree == nil {
+		return 0
+	}
+	r := 0
+	for _, e := range tree.Here {
+		if e.Shape == shape {
+			r++
+		}
+	}
+	r += scanForInNode(tree.Children[0], shape)
+	r += scanForInNode(tree.Children[1], shape)
+	return r
+}
+
+func PI(i int) *int {
+	return &i
 }
