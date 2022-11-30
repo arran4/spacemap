@@ -335,7 +335,6 @@ func balancedDepthTest(n *Node, i int, t *testing.T, p []int) int {
 	if n.MaxDepth != m {
 		t.Errorf("%#v is depth is wrong: .MaxDepth= %d vs max depth= %d", p, n.MaxDepth, m)
 	}
-	p = p[:len(p)-1]
 	return m
 }
 
@@ -354,7 +353,7 @@ func plotTree(n *Node, w int, value func(*Node) string) string {
 			}
 			p[pli] = ns
 		}
-		sl := make([]string, strl, strl)
+		sl := make([]string, strl)
 		for i, en := range line {
 			if en == nil {
 				continue

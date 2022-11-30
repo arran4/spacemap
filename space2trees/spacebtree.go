@@ -263,16 +263,6 @@ func (n *Node) VerticalRotate(direction Direction) *Node {
 	return r
 }
 
-func (n *Node) HorizontalRotate(direction Direction) *Node {
-	n1, n2 := 0, 1
-	if direction <= 0 {
-		n1, n2 = n2, n1
-	}
-	var r *Node
-	r, n.Children[n1], n.Children[n2] = n.Children[n2], n.Children[n1], n
-	return r
-}
-
 func (n *Node) RecalculateDepth(depth int) int {
 	if n == nil {
 		return depth - 1
