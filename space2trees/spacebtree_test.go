@@ -690,8 +690,8 @@ func TestNode_AvlBalance(t *testing.T) {
 func TestStruct_Remove(t *testing.T) {
 	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
 	rect2 := shared.NewRectangle(40, 40, 60, 60, shared.Name("rect2"))
-	//rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
-	//rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
+	rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
+	rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
 	tests := []struct {
 		name        string
 		Constructor func() *Struct
@@ -763,6 +763,11 @@ func TestStruct_Remove(t *testing.T) {
 					),
 				)
 			},
+		},
+		{
+			name:        "Remove the first of 4 balanced",
+			Constructor: NSMBalanced(rect1, rect2, rect3, rect4),
+			shape:       rect1,
 		},
 	}
 	for _, tt := range tests {
