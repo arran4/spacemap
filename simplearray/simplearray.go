@@ -35,12 +35,14 @@ func (sm *Struct) Add(s shared.Shape) *Struct {
 }
 
 func (sm *Struct) Remove(s shared.Shape) *Struct {
+	shrink := 0
 	for i := range sm.Shapes {
-		if sm.Shapes[i] == s {
-			sm.Shapes[i] = sm.Shapes[len(sm.Shapes)-1]
-			sm.Shapes = sm.Shapes[:len(sm.Shapes)-1]
+		for sm.Shapes[i] != nil && sm.Shapes[i].Shape == s && len(sm.Shapes)-shrink > i {
+			shrink++
+			sm.Shapes[i] = sm.Shapes[len(sm.Shapes)-shrink]
 		}
 	}
+	sm.Shapes = sm.Shapes[:len(sm.Shapes)-shrink]
 	return sm
 }
 
