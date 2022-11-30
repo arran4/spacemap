@@ -182,3 +182,67 @@ func LogStructureContents(t *testing.T, spaceMap *Struct) {
 	}
 	t.Log(b.String())
 }
+
+func TestStruct_Remove(t *testing.T) {
+	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
+	rect2 := shared.NewRectangle(40, 40, 60, 60, shared.Name("rect2"))
+	rect3 := shared.NewRectangle(10, 10, 60, 60)
+	tests := []struct {
+		name        string
+		Constructor func() *Struct
+		shape       shared.Shape
+		want        *Struct
+		NumberMap   [][]int
+		StackCount  int
+	}{
+		{
+			name:        "Remove just one and all",
+			Constructor: NSM(rect1),
+			shape:       rect1,
+			NumberMap:   [][]int{},
+			StackCount:  0,
+		},
+		{
+			name:        "Remove just one, one remains, no edge overlap",
+			Constructor: NSM(rect1, rect2),
+			shape:       rect1,
+			NumberMap:   [][]int{{1, 1}, {1, 1}},
+			StackCount:  4,
+		},
+		{
+			name:        "Remove failed one, two remain, no edge overlap",
+			Constructor: NSM(rect1, rect2),
+			shape:       rect3,
+			NumberMap:   [][]int{{1, 1, 1, 1}, {1, 2, 2, 1}, {1, 2, 2, 1}, {1, 1, 1, 1}},
+			StackCount:  16,
+		},
+		{
+			name:        "Remove just one, one remains, one edge overlap",
+			Constructor: NSM(rect1, rect3),
+			shape:       rect1,
+			NumberMap:   [][]int{{1, 1}, {1, 1}},
+			StackCount:  4,
+		},
+		{
+			name:        "Remove failed one, two remain, one edge overlap",
+			Constructor: NSM(rect1, rect3),
+			shape:       rect2,
+			NumberMap:   [][]int{{2, 2, 1}, {2, 2, 1}, {1, 1, 1}},
+			StackCount:  9,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.Constructor().Remove(tt.shape)
+			if tt.NumberMap != nil {
+				numberMap := NumberMapper(got)
+				if s := cmp.Diff(numberMap, tt.NumberMap); len(s) > 0 {
+					t.Errorf("Failed stacks differ:\n%s", s)
+				}
+			}
+			if tt.StackCount != len(got.Stacks) {
+				t.Errorf("Stack count mismatch: expected %d got %d", tt.StackCount, len(got.Stacks))
+			}
+		})
+	}
+}

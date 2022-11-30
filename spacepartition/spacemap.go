@@ -232,3 +232,95 @@ func New() *Struct {
 		Stacks:  map[SplitCoordination][]shared.Shape{},
 	}
 }
+
+type ShapeArray []shared.Shape
+
+func (a ShapeArray) Remove(shape shared.Shape) ([]shared.Shape, int) {
+	shrink := 0
+	for i := range a {
+		for a[i] == shape && len(a)-shrink > i {
+			shrink++
+			a[i] = a[len(a)-shrink]
+		}
+	}
+	return a[:len(a)-shrink], shrink
+}
+
+type SplitArray []*Split
+
+func (sa SplitArray) Remove(shape shared.Shape) ([]*Split, []*Split) {
+	shrink := 0
+	var removedFrom []*Split
+	for sai := range sa {
+		var removeCount int
+		sa[sai].BecauseOf, removeCount = ShapeArray(sa[sai].BecauseOf).Remove(shape)
+		if removeCount > 0 {
+			removedFrom = append(removedFrom, sa[sai])
+		}
+		sa[sai-shrink] = sa[sai]
+		if len(sa[sai].BecauseOf) == 0 {
+			shrink++
+		}
+	}
+	return sa[:len(sa)-shrink], removedFrom
+}
+
+func (m *Struct) Remove(shape shared.Shape) *Struct {
+	var vRemovedFrom []*Split
+	var hRemovedFrom []*Split
+	m.VSplits, vRemovedFrom = SplitArray(m.VSplits).Remove(shape)
+	m.HSplits, hRemovedFrom = SplitArray(m.HSplits).Remove(shape)
+	var i int
+	for _, v := range vRemovedFrom {
+		for _, h := range m.HSplits {
+			k := SplitCoordination{HSplit: h, VSplit: v}
+			a, ok := m.Stacks[k]
+			if !ok {
+				continue
+			}
+			if len(v.BecauseOf) == 0 {
+				delete(m.Stacks, k)
+				continue
+			}
+			a, i = ShapeArray(a).Remove(shape)
+			if i > 0 {
+				m.Stacks[k] = a
+			}
+		}
+	}
+	for _, v := range m.VSplits {
+		for _, h := range hRemovedFrom {
+			k := SplitCoordination{HSplit: h, VSplit: v}
+			a, ok := m.Stacks[k]
+			if !ok {
+				continue
+			}
+			if len(h.BecauseOf) == 0 {
+				delete(m.Stacks, k)
+				continue
+			}
+			a, i = ShapeArray(a).Remove(shape)
+			if i > 0 {
+				m.Stacks[k] = a
+			}
+		}
+	}
+	for _, v := range vRemovedFrom {
+		for _, h := range hRemovedFrom {
+			k := SplitCoordination{HSplit: h, VSplit: v}
+			a, ok := m.Stacks[k]
+			if !ok {
+				continue
+			}
+			if len(h.BecauseOf) == 0 || len(v.BecauseOf) == 0 {
+				delete(m.Stacks, k)
+				continue
+			}
+			a, i = ShapeArray(a).Remove(shape)
+			if i > 0 {
+				m.Stacks[k] = a
+			}
+		}
+	}
+	return m
+}
