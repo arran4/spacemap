@@ -101,6 +101,18 @@ func (n *Node) AddBetween(from, to int, s shared.Shape, zIndex *int, leftMost, r
 
 func (n *Node) InsertHere(zIndex *int, s shared.Shape, t Type) {
 	var zi int
+	if zIndex != nil {
+		zi = *zIndex
+	}
+	n.Here = append(n.Here, &Here{
+		Shape:  s,
+		ZIndex: zi,
+		Type:   t,
+	})
+}
+
+func (n *Node) InsertHereReZIndex(zIndex *int, s shared.Shape, t Type) {
+	var zi int
 	if n != nil {
 		zi = len(n.Here)
 	}
