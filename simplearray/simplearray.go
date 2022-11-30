@@ -5,31 +5,27 @@ import (
 	"spacemap/shared"
 )
 
-type Point struct {
-	ZIndex int
-	shared.Shape
-}
-
 type Struct struct {
-	Shapes []*Point
+	Shapes []*shared.Point
 }
 
 func New() *Struct {
 	return &Struct{
-		Shapes: []*Point{},
+		Shapes: []*shared.Point{},
 	}
 }
 
 func (sm *Struct) AddAll(s ...shared.Shape) *Struct {
 	for _, e := range s {
-		sm.Add(e)
+		sm.Add(e, 0)
 	}
 	return sm
 }
 
-func (sm *Struct) Add(s shared.Shape) *Struct {
-	sm.Shapes = append(sm.Shapes, &Point{
-		Shape: s,
+func (sm *Struct) Add(shape shared.Shape, zIndex int) *Struct {
+	sm.Shapes = append(sm.Shapes, &shared.Point{
+		Shape:  shape,
+		ZIndex: zIndex,
 	})
 	return sm
 }
@@ -47,31 +43,15 @@ func (sm *Struct) Remove(s shared.Shape) *Struct {
 }
 
 func (sm *Struct) GetStackAt(x int, y int) (result []shared.Shape) {
-	var r []*Point
+	var r []*shared.Point
 	for i := range sm.Shapes {
 		if sm.Shapes[i].PointIn(x, y) {
 			r = append(r, sm.Shapes[i])
 		}
 	}
-	sort.Sort(ZSort(r))
+	sort.Sort(shared.ZSort(r))
 	for _, e := range r {
 		result = append(result, e.Shape)
 	}
 	return
 }
-
-type ZSort []*Point
-
-func (Z ZSort) Len() int {
-	return len(Z)
-}
-
-func (Z ZSort) Less(i, j int) bool {
-	return Z[i].ZIndex < Z[j].ZIndex
-}
-
-func (Z ZSort) Swap(i, j int) {
-	Z[i], Z[j] = Z[j], Z[i]
-}
-
-var _ sort.Interface = ZSort(nil)

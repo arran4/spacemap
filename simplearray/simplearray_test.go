@@ -20,25 +20,25 @@ func TestStruct_Remove(t *testing.T) {
 		{
 			name: "Remove removes 1",
 			Struct: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect1},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect1},
 				},
 			},
 			want: &Struct{
-				Shapes: []*Point{},
+				Shapes: []*shared.Point{},
 			},
 			shape: rect1,
 		},
 		{
 			name: "Remove missing does nothing",
 			Struct: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect1},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect1},
 				},
 			},
 			want: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect1},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect1},
 				},
 			},
 			shape: rect2,
@@ -46,14 +46,14 @@ func TestStruct_Remove(t *testing.T) {
 		{
 			name: "Remove doesn't impact the following",
 			Struct: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect1},
-					&Point{Shape: rect2},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect2},
 				},
 			},
 			want: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect2},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect2},
 				},
 			},
 			shape: rect1,
@@ -61,14 +61,14 @@ func TestStruct_Remove(t *testing.T) {
 		{
 			name: "Remove doesn't impact the preceding",
 			Struct: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect2},
-					&Point{Shape: rect1},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect2},
+					&shared.Point{Shape: rect1},
 				},
 			},
 			want: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect2},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect2},
 				},
 			},
 			shape: rect1,
@@ -76,23 +76,23 @@ func TestStruct_Remove(t *testing.T) {
 		{
 			name: "Multiple remove of a heterogeneous set is fine",
 			Struct: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect2},
-					&Point{Shape: rect1},
-					&Point{Shape: rect3},
-					&Point{Shape: rect1},
-					&Point{Shape: rect4},
-					&Point{Shape: rect1},
-					&Point{Shape: rect3},
-					&Point{Shape: rect1},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect2},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect3},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect4},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect3},
+					&shared.Point{Shape: rect1},
 				},
 			},
 			want: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect2},
-					&Point{Shape: rect3},
-					&Point{Shape: rect3},
-					&Point{Shape: rect4},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect2},
+					&shared.Point{Shape: rect3},
+					&shared.Point{Shape: rect3},
+					&shared.Point{Shape: rect4},
 				},
 			},
 			shape: rect1,
@@ -100,19 +100,19 @@ func TestStruct_Remove(t *testing.T) {
 		{
 			name: "Multiple remove of a homogenous set is fine",
 			Struct: &Struct{
-				Shapes: []*Point{
-					&Point{Shape: rect1},
-					&Point{Shape: rect1},
-					&Point{Shape: rect1},
-					&Point{Shape: rect1},
-					&Point{Shape: rect1},
-					&Point{Shape: rect1},
-					&Point{Shape: rect1},
-					&Point{Shape: rect1},
+				Shapes: []*shared.Point{
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect1},
+					&shared.Point{Shape: rect1},
 				},
 			},
 			want: &Struct{
-				Shapes: []*Point{},
+				Shapes: []*shared.Point{},
 			},
 			shape: rect1,
 		},

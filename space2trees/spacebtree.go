@@ -327,19 +327,19 @@ type Struct struct {
 
 func (m *Struct) AddAll(shapes ...shared.Shape) *Struct {
 	for _, shape := range shapes {
-		m.Add(shape)
+		m.Add(shape, 0)
 	}
 	return m
 }
 
-func (m *Struct) Add(shape shared.Shape) *Struct {
+func (m *Struct) Add(shape shared.Shape, zIndex int) *Struct {
 	b := shape.Bounds()
 	var balance = -1
 	if m.Balanced {
 		balance = 0
 	}
-	m.VTree = m.VTree.AddBetween(b.Min.Y, b.Max.Y, shape, nil, true, true, nil, balance)
-	m.HTree = m.HTree.AddBetween(b.Min.X, b.Max.X, shape, nil, true, true, nil, balance)
+	m.VTree = m.VTree.AddBetween(b.Min.Y, b.Max.Y, shape, &zIndex, true, true, nil, balance)
+	m.HTree = m.HTree.AddBetween(b.Min.X, b.Max.X, shape, &zIndex, true, true, nil, balance)
 	return m
 }
 

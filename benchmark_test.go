@@ -37,9 +37,8 @@ func GenerateBenchShapes(limit int) (result []shared.Shape) {
 }
 
 type Interface[T any] interface {
-	AddAll(...shared.Shape) T
-	Add(shared.Shape) T
-	Remove(shared.Shape) T
+	Add(shape shared.Shape, zIndex int) T
+	Remove(shape shared.Shape) T
 	GetStackAt(x int, y int) []shared.Shape
 }
 
@@ -96,6 +95,36 @@ func BenchmarkSimpleArrayAddSearch(b *testing.B) {
 		sm.AddAll(benchShapes...)
 		for _, l := range spaceLookups {
 			sm.GetStackAt(l.X, l.Y)
+		}
+	}
+}
+
+func BenchmarkSpacePartitionAddDelete(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		sm := spaceparition.New()
+		sm.AddAll(benchShapes...)
+		for _, l := range benchShapes {
+			sm.Remove(l)
+		}
+	}
+}
+
+func BenchmarkSpaceBTreeAddDelete(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		sm := space2trees.New()
+		sm.AddAll(benchShapes...)
+		for _, l := range benchShapes {
+			sm.Remove(l)
+		}
+	}
+}
+
+func BenchmarkSimpleArrayAddDelete(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		sm := simplearray.New()
+		sm.AddAll(benchShapes...)
+		for _, l := range benchShapes {
+			sm.Remove(l)
 		}
 	}
 }

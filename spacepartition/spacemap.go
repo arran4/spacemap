@@ -47,17 +47,17 @@ func SC(HSplit *Split, VSplit *Split) SplitCoordination {
 type Struct struct {
 	VSplits []*Split
 	HSplits []*Split
-	Stacks  map[SplitCoordination][]shared.Shape
+	Stacks  map[SplitCoordination][]*shared.Point
 }
 
 func (m *Struct) AddAll(shapes ...shared.Shape) *Struct {
 	for _, shape := range shapes {
-		m.Add(shape)
+		m.Add(shape, 0)
 	}
 	return m
 }
 
-func (m *Struct) Add(shape shared.Shape) *Struct {
+func (m *Struct) Add(shape shared.Shape, zIndex int) *Struct {
 	b := shape.Bounds()
 	minxi, minyi := m.GetXYPositions(b.Min)
 	maxxi, maxyi := m.GetXYPositions(b.Max)
@@ -96,9 +96,9 @@ func (m *Struct) Add(shape shared.Shape) *Struct {
 				}
 				if ovs != nil {
 					if hs != maxxhs[0] {
-						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(hs, ovs)]...)
+						m.Stacks[SC(hs, vs)] = append([]*shared.Point{}, m.Stacks[SC(hs, ovs)]...)
 					} else if lhs != nil {
-						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(lhs, ovs)]...)
+						m.Stacks[SC(hs, vs)] = append([]*shared.Point{}, m.Stacks[SC(lhs, ovs)]...)
 					}
 				}
 				lhs = hs
@@ -113,7 +113,7 @@ func (m *Struct) Add(shape shared.Shape) *Struct {
 					continue
 				}
 				if maxxhs[1] != nil {
-					m.Stacks[SC(maxxhs[0], vs)] = append([]shared.Shape{}, m.Stacks[SC(maxxhs[1], vs)]...)
+					m.Stacks[SC(maxxhs[0], vs)] = append([]*shared.Point{}, m.Stacks[SC(maxxhs[1], vs)]...)
 				}
 			}
 		}
@@ -154,9 +154,9 @@ func (m *Struct) Add(shape shared.Shape) *Struct {
 				}
 				if pvs != nil {
 					if hs != minxhs[0] {
-						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(hs, pvs)]...)
+						m.Stacks[SC(hs, vs)] = append([]*shared.Point{}, m.Stacks[SC(hs, pvs)]...)
 					} else if lhs != nil {
-						m.Stacks[SC(hs, vs)] = append([]shared.Shape{}, m.Stacks[SC(lhs, pvs)]...)
+						m.Stacks[SC(hs, vs)] = append([]*shared.Point{}, m.Stacks[SC(lhs, pvs)]...)
 					}
 				}
 				lhs = hs
@@ -172,7 +172,7 @@ func (m *Struct) Add(shape shared.Shape) *Struct {
 					continue
 				}
 				if minxhs[1] != nil {
-					m.Stacks[SC(minxhs[0], vs)] = append([]shared.Shape{}, m.Stacks[SC(minxhs[1], vs)]...)
+					m.Stacks[SC(minxhs[0], vs)] = append([]*shared.Point{}, m.Stacks[SC(minxhs[1], vs)]...)
 				}
 			}
 		}
@@ -181,7 +181,10 @@ func (m *Struct) Add(shape shared.Shape) *Struct {
 		for y := minyi; y <= maxyi; y++ {
 			hs := m.HSplits[x]
 			vs := m.VSplits[y]
-			m.Stacks[SC(hs, vs)] = append(m.Stacks[SC(hs, vs)], shape)
+			m.Stacks[SC(hs, vs)] = append(m.Stacks[SC(hs, vs)], &shared.Point{
+				Shape:  shape,
+				ZIndex: zIndex,
+			})
 		}
 	}
 	return m
@@ -216,7 +219,11 @@ func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
 		}
 		if hs != nil && vs != nil && vs.Position <= y && hs.Position <= y {
 			if s, ok := m.Stacks[SC(hs, vs)]; ok && s != nil {
-				return s
+				var r = make([]shared.Shape, 0, len(s))
+				for _, p := range s {
+					r = append(r, p.Shape)
+				}
+				return r
 			} else {
 				log.Default()
 			}
@@ -229,7 +236,7 @@ func New() *Struct {
 	return &Struct{
 		VSplits: []*Split{},
 		HSplits: []*Split{},
-		Stacks:  map[SplitCoordination][]shared.Shape{},
+		Stacks:  map[SplitCoordination][]*shared.Point{},
 	}
 }
 
@@ -239,6 +246,19 @@ func (a ShapeArray) Remove(shape shared.Shape) ([]shared.Shape, int) {
 	shrink := 0
 	for i := range a {
 		for a[i] == shape && len(a)-shrink > i {
+			shrink++
+			a[i] = a[len(a)-shrink]
+		}
+	}
+	return a[:len(a)-shrink], shrink
+}
+
+type PointArray []*shared.Point
+
+func (a PointArray) Remove(shape shared.Shape) ([]*shared.Point, int) {
+	shrink := 0
+	for i := range a {
+		for a[i].Shape == shape && len(a)-shrink > i {
 			shrink++
 			a[i] = a[len(a)-shrink]
 		}
@@ -310,7 +330,7 @@ func (m *Struct) Remove(shape shared.Shape) *Struct {
 			delete(m.Stacks, k)
 			continue
 		}
-		a, i = ShapeArray(a).Remove(shape)
+		a, i = PointArray(a).Remove(shape)
 		if i > 0 {
 			m.Stacks[k] = a
 		}
