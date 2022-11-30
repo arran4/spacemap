@@ -37,9 +37,9 @@ func GenerateBenchShapes(limit int) (result []shared.Shape) {
 }
 
 var (
-	_ Interface[*space2trees.Struct]   = (*space2trees.Struct)(nil)
-	_ Interface[*spaceparition.Struct] = (*spaceparition.Struct)(nil)
-	_ Interface[*simplearray.Struct]   = (*simplearray.Struct)(nil)
+	_ Interface = (*space2trees.Struct)(nil)
+	_ Interface = (*spaceparition.Struct)(nil)
+	_ Interface = (*simplearray.Struct)(nil)
 )
 
 func BenchmarkSpacePartitionAdd(b *testing.B) {

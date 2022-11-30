@@ -233,7 +233,8 @@ func TestStruct_Remove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.Constructor().Remove(tt.shape)
+			got := tt.Constructor()
+			got.Remove(tt.shape)
 			if tt.NumberMap != nil {
 				numberMap := NumberMapper(got)
 				if s := cmp.Diff(numberMap, tt.NumberMap); len(s) > 0 {

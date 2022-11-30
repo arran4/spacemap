@@ -57,7 +57,7 @@ func (m *Struct) AddAll(shapes ...shared.Shape) *Struct {
 	return m
 }
 
-func (m *Struct) Add(shape shared.Shape, zIndex int) *Struct {
+func (m *Struct) Add(shape shared.Shape, zIndex int) {
 	b := shape.Bounds()
 	minxi, minyi := m.GetXYPositions(b.Min)
 	maxxi, maxyi := m.GetXYPositions(b.Max)
@@ -187,7 +187,6 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) *Struct {
 			})
 		}
 	}
-	return m
 }
 
 func (m *Struct) GetXYPositions(p image.Point) (int, int) {
@@ -283,7 +282,7 @@ func (sa SplitArray) Remove(shape shared.Shape) ([]*Split, []*Split) {
 	return sa[:len(sa)-shrink], removedFrom
 }
 
-func (m *Struct) Remove(shape shared.Shape) *Struct {
+func (m *Struct) Remove(shape shared.Shape) {
 	var vRemovedFrom []*Split
 	var hRemovedFrom []*Split
 	m.VSplits, vRemovedFrom = SplitArray(m.VSplits).Remove(shape)
@@ -322,7 +321,6 @@ func (m *Struct) Remove(shape shared.Shape) *Struct {
 			m.Stacks[k] = a
 		}
 	}
-	return m
 }
 
 func (m *Struct) GetAt(x int, y int) shared.Shape {

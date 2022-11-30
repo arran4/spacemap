@@ -340,7 +340,7 @@ func (m *Struct) AddAll(shapes ...shared.Shape) *Struct {
 	return m
 }
 
-func (m *Struct) Add(shape shared.Shape, zIndex int) *Struct {
+func (m *Struct) Add(shape shared.Shape, zIndex int) {
 	b := shape.Bounds()
 	var balance = -1
 	if m.Balanced {
@@ -348,7 +348,6 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) *Struct {
 	}
 	m.VTree = m.VTree.AddBetween(b.Min.Y, b.Max.Y, shape, &zIndex, true, true, nil, balance)
 	m.HTree = m.HTree.AddBetween(b.Min.X, b.Max.X, shape, &zIndex, true, true, nil, balance)
-	return m
 }
 
 func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
@@ -477,7 +476,7 @@ func (n *Node) Most(i int) (*Node, *Node) {
 	return m, p
 }
 
-func (m *Struct) Remove(shape shared.Shape) *Struct {
+func (m *Struct) Remove(shape shared.Shape) {
 	b := shape.Bounds()
 	var balance = -1
 	if m.Balanced {
@@ -485,7 +484,6 @@ func (m *Struct) Remove(shape shared.Shape) *Struct {
 	}
 	m.VTree, _ = m.VTree.RemoveBetween(b.Min.Y, b.Max.Y, shape, balance)
 	m.HTree, _ = m.HTree.RemoveBetween(b.Min.X, b.Max.X, shape, balance)
-	return m
 }
 
 func (m *Struct) GetAt(x int, y int) shared.Shape {

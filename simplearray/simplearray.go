@@ -22,15 +22,14 @@ func (sm *Struct) AddAll(s ...shared.Shape) *Struct {
 	return sm
 }
 
-func (sm *Struct) Add(shape shared.Shape, zIndex int) *Struct {
+func (sm *Struct) Add(shape shared.Shape, zIndex int) {
 	sm.Shapes = append(sm.Shapes, &shared.Point{
 		Shape:  shape,
 		ZIndex: zIndex,
 	})
-	return sm
 }
 
-func (sm *Struct) Remove(s shared.Shape) *Struct {
+func (sm *Struct) Remove(s shared.Shape) {
 	shrink := 0
 	for i := range sm.Shapes {
 		for sm.Shapes[i] != nil && sm.Shapes[i].Shape == s && len(sm.Shapes)-shrink > i {
@@ -39,7 +38,6 @@ func (sm *Struct) Remove(s shared.Shape) *Struct {
 		}
 	}
 	sm.Shapes = sm.Shapes[:len(sm.Shapes)-shrink]
-	return sm
 }
 
 func (sm *Struct) GetStackAt(x int, y int) (result []shared.Shape) {

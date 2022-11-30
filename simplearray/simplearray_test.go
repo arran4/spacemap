@@ -119,8 +119,8 @@ func TestStruct_Remove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.Remove(tt.shape)
-			if diff := cmp.Diff(got, tt.want); diff != "" {
+			tt.Remove(tt.shape)
+			if diff := cmp.Diff(tt.Struct, tt.want); diff != "" {
 				t.Errorf("Remove() = \n%s", diff)
 			}
 		})

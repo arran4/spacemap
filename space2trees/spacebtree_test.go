@@ -775,7 +775,8 @@ func TestStruct_Remove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := tt.Constructor().Remove(tt.shape)
+			sm := tt.Constructor()
+			sm.Remove(tt.shape)
 			if sm.Balanced {
 				balancedDepthTest(sm.VTree, 0, t, []int{})
 				balancedDepthTest(sm.HTree, 0, t, []int{})
