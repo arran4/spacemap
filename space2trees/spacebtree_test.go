@@ -65,14 +65,14 @@ func TestSpaceBTreeAdd(t *testing.T) {
 	rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
 	rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
 	for _, test := range []struct {
-		Name             string
-		SpaceMap         func() *Struct
-		ExpectedSpaceMap *Struct
+		Name        string
+		Constructor func() *Struct
+		Expected    *Struct
 	}{
 		{
-			Name:     "unbalanced rect1",
-			SpaceMap: NSMUnbalanced(rect1),
-			ExpectedSpaceMap: NewTUnbalancedSpaceMap(
+			Name:        "unbalanced rect1",
+			Constructor: NSMUnbalanced(rect1),
+			Expected: NewTUnbalancedSpaceMap(
 				NewTNode(10,
 					nil,
 					NewTNode(100, nil, nil, NewTHere(rect1, 0, End)),
@@ -86,9 +86,9 @@ func TestSpaceBTreeAdd(t *testing.T) {
 			),
 		},
 		{
-			Name:     "unbalanced rect1, rect2",
-			SpaceMap: NSMUnbalanced(rect1, rect2),
-			ExpectedSpaceMap: NewTUnbalancedSpaceMap(
+			Name:        "unbalanced rect1, rect2",
+			Constructor: NSMUnbalanced(rect1, rect2),
+			Expected: NewTUnbalancedSpaceMap(
 				NewTNode(10,
 					nil,
 					NewTNode(100,
@@ -128,9 +128,9 @@ func TestSpaceBTreeAdd(t *testing.T) {
 			),
 		},
 		{
-			Name:     "unbalanced rect2, rect3",
-			SpaceMap: NSMUnbalanced(rect2, rect3),
-			ExpectedSpaceMap: NewTUnbalancedSpaceMap(
+			Name:        "unbalanced rect2, rect3",
+			Constructor: NSMUnbalanced(rect2, rect3),
+			Expected: NewTUnbalancedSpaceMap(
 				NewTNode(40,
 					NewTNode(10,
 						nil,
@@ -164,9 +164,9 @@ func TestSpaceBTreeAdd(t *testing.T) {
 			),
 		},
 		{
-			Name:     "unbalanced rect1, rect4",
-			SpaceMap: NSMUnbalanced(rect1, rect4),
-			ExpectedSpaceMap: NewTUnbalancedSpaceMap(
+			Name:        "unbalanced rect1, rect4",
+			Constructor: NSMUnbalanced(rect1, rect4),
+			Expected: NewTUnbalancedSpaceMap(
 				NewTNode(10,
 					nil,
 					NewTNode(100,
@@ -200,9 +200,9 @@ func TestSpaceBTreeAdd(t *testing.T) {
 			),
 		},
 		{
-			Name:     "unbalanced rect1, rect2, rect3",
-			SpaceMap: NSMUnbalanced(rect1, rect2, rect3),
-			ExpectedSpaceMap: NewTUnbalancedSpaceMap(
+			Name:        "unbalanced rect1, rect2, rect3",
+			Constructor: NSMUnbalanced(rect1, rect2, rect3),
+			Expected: NewTUnbalancedSpaceMap(
 				NewTNode(10,
 					nil,
 					NewTNode(100,
@@ -250,9 +250,9 @@ func TestSpaceBTreeAdd(t *testing.T) {
 			),
 		},
 		{
-			Name:     "balanced rect1",
-			SpaceMap: NSMBalanced(rect1),
-			ExpectedSpaceMap: NewTBalancedSpaceMap(
+			Name:        "balanced rect1",
+			Constructor: NSMBalanced(rect1),
+			Expected: NewTBalancedSpaceMap(
 				NewTNode(10,
 					nil,
 					NewTNode(100, nil, nil, NewTHere(rect1, 0, End)),
@@ -266,34 +266,34 @@ func TestSpaceBTreeAdd(t *testing.T) {
 			),
 		},
 		{
-			Name:             "balanced rect1, rect2",
-			SpaceMap:         NSMBalanced(rect1, rect2),
-			ExpectedSpaceMap: nil,
+			Name:        "balanced rect1, rect2",
+			Constructor: NSMBalanced(rect1, rect2),
+			Expected:    nil,
 		},
 		{
-			Name:             "balanced rect2, rect3",
-			SpaceMap:         NSMBalanced(rect2, rect3),
-			ExpectedSpaceMap: nil,
+			Name:        "balanced rect2, rect3",
+			Constructor: NSMBalanced(rect2, rect3),
+			Expected:    nil,
 		},
 		{
-			Name:             "balanced rect1, rect4",
-			SpaceMap:         NSMBalanced(rect1, rect4),
-			ExpectedSpaceMap: nil,
+			Name:        "balanced rect1, rect4",
+			Constructor: NSMBalanced(rect1, rect4),
+			Expected:    nil,
 		},
 		{
-			Name:             "balanced rect1, rect2, rect3",
-			SpaceMap:         NSMBalanced(rect1, rect2, rect3),
-			ExpectedSpaceMap: nil,
+			Name:        "balanced rect1, rect2, rect3",
+			Constructor: NSMBalanced(rect1, rect2, rect3),
+			Expected:    nil,
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			sm := test.SpaceMap()
+			sm := test.Constructor()
 			if sm.Balanced {
 				balancedDepthTest(sm.VTree, 0, t, []int{})
 				balancedDepthTest(sm.HTree, 0, t, []int{})
 			}
-			if test.ExpectedSpaceMap != nil {
-				if s := cmp.Diff(sm, test.ExpectedSpaceMap); len(s) > 0 {
+			if test.Expected != nil {
+				if s := cmp.Diff(sm, test.Expected); len(s) > 0 {
 					t.Errorf("Failed stacks differ: %s", s)
 				}
 			}
@@ -308,9 +308,9 @@ func TestSpaceBTreeAdd(t *testing.T) {
 				t.Logf("Result HTree:\n%s", plotTree(sm.HTree, 3, value))
 				t.Logf("Result VTree.depth:\n%s", plotTree(sm.VTree, 3, depth))
 				t.Logf("Result HTree.depth:\n%s", plotTree(sm.HTree, 3, depth))
-				if test.ExpectedSpaceMap != nil {
-					t.Logf("Expected VTree:\n%s", plotTree(test.ExpectedSpaceMap.VTree, 3, value))
-					t.Logf("Expected HTree:\n%s", plotTree(test.ExpectedSpaceMap.HTree, 3, value))
+				if test.Expected != nil {
+					t.Logf("Expected VTree:\n%s", plotTree(test.Expected.VTree, 3, value))
+					t.Logf("Expected HTree:\n%s", plotTree(test.Expected.HTree, 3, value))
 				}
 			}
 		})
@@ -682,6 +682,76 @@ func TestNode_AvlBalance(t *testing.T) {
 					return fmt.Sprintf("%d", n.Value)
 				}
 				t.Logf("Result VTree:\n%s", plotTree(got, 3, value))
+			}
+		})
+	}
+}
+
+func TestStruct_Remove(t *testing.T) {
+	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
+	rect2 := shared.NewRectangle(40, 40, 60, 60, shared.Name("rect2"))
+	//rect3 := shared.NewRectangle(10, 10, 60, 60, shared.Name("rect3"))
+	//rect4 := shared.NewRectangle(60, 60, 100, 100, shared.Name("rect4"))
+	tests := []struct {
+		name        string
+		Constructor func() *Struct
+		Expected    func() *Struct
+		shape       shared.Shape
+	}{
+		{
+			name:        "Remove the only unbalanced",
+			Constructor: NSMUnbalanced(rect1),
+			shape:       rect1,
+			Expected:    NSMUnbalanced(),
+		},
+		{
+			name:        "Remove the only balanced",
+			Constructor: NSMBalanced(rect1),
+			shape:       rect1,
+			Expected:    NSMBalanced(),
+		},
+		{
+			name:        "Remove the first of 2 unbalanced",
+			Constructor: NSMUnbalanced(rect1, rect2),
+			shape:       rect1,
+			Expected:    NSMUnbalanced(rect2),
+		},
+		{
+			name:        "Remove the first of 2 balanced",
+			Constructor: NSMBalanced(rect1, rect2),
+			shape:       rect1,
+			Expected:    NSMBalanced(rect2),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sm := tt.Constructor().Remove(tt.shape)
+			if sm.Balanced {
+				balancedDepthTest(sm.VTree, 0, t, []int{})
+				balancedDepthTest(sm.HTree, 0, t, []int{})
+			}
+			var expected *Struct = nil
+			if tt.Expected != nil {
+				expected = tt.Expected()
+				if s := cmp.Diff(sm, expected); len(s) > 0 {
+					t.Errorf("Failed stacks differ: %s", s)
+				}
+			}
+			if t.Failed() {
+				value := func(n *Node) string {
+					return fmt.Sprintf("%d", n.Value)
+				}
+				depth := func(n *Node) string {
+					return fmt.Sprintf("%d", n.MaxDepth)
+				}
+				t.Logf("Result VTree:\n%s", plotTree(sm.VTree, 3, value))
+				t.Logf("Result HTree:\n%s", plotTree(sm.HTree, 3, value))
+				t.Logf("Result VTree.depth:\n%s", plotTree(sm.VTree, 3, depth))
+				t.Logf("Result HTree.depth:\n%s", plotTree(sm.HTree, 3, depth))
+				if tt.Expected != nil {
+					t.Logf("Expected VTree:\n%s", plotTree(expected.VTree, 3, value))
+					t.Logf("Expected HTree:\n%s", plotTree(expected.HTree, 3, value))
+				}
 			}
 		})
 	}

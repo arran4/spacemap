@@ -375,3 +375,107 @@ func New() *Struct {
 		Balanced: true,
 	}
 }
+
+func (n *Node) RemoveBetween(from, to int, s shared.Shape, depth int) (*Node, bool) {
+	if n == nil {
+		return n, false
+	}
+	r := n
+	deleted := false
+	if from <= r.Value && r.Value <= to {
+		for {
+			remaining := r.RemoveHere(s)
+			if remaining == 0 {
+				r = r.DeleteNode()
+				deleted = true
+				if r == nil {
+					return nil, deleted
+				}
+				continue
+			}
+			break
+		}
+	}
+	var nDepth = depth
+	if depth >= 0 {
+		nDepth = depth + 1
+	}
+	if r.Value > from {
+		var d bool
+		n.Children[0], d = r.Children[0].RemoveBetween(from, to, s, nDepth)
+		deleted = deleted || d
+	}
+	if r.Value < to {
+		var d bool
+		r.Children[1], d = r.Children[1].RemoveBetween(from, to, s, nDepth)
+		deleted = deleted || d
+	}
+	if depth >= 0 && deleted {
+		r = r.AvlBalance(depth)
+	}
+	return r, deleted
+}
+
+func (n *Node) RemoveHere(s shared.Shape) int {
+	shrink := 0
+	for i := range n.Here {
+		for i+shrink < len(n.Here) {
+			if n.Here[i+shrink].Shape == s {
+				shrink++
+			} else {
+				break
+			}
+		}
+		if i+shrink >= len(n.Here) {
+			break
+		}
+		if shrink == 0 {
+			continue
+		}
+		n.Here[i] = n.Here[i+shrink]
+	}
+	n.Here = n.Here[:len(n.Here)-shrink]
+	return len(n.Here)
+}
+
+func (n *Node) DeleteNode() *Node {
+	if n.Children[0] == nil {
+		return n.Children[1]
+	}
+	if n.Children[1] == nil {
+		return n.Children[0]
+	}
+	nn, np := n.Children[1].Most(0)
+	if np != nil {
+		np.Children[0] = nn.Children[1]
+	} else {
+		n.Children[1] = nil
+	}
+	nn.Children = n.Children
+	return nn
+}
+
+func (n *Node) Most(i int) (*Node, *Node) {
+	if n == nil {
+		return nil, nil
+	}
+	m, p := n.Children[i].Most(i)
+	if m == nil {
+		return n, nil
+	}
+	if p == nil {
+		p = n
+	}
+	return m, p
+}
+
+func (m *Struct) Remove(shape shared.Shape) *Struct {
+	b := shape.Bounds()
+	var balance = -1
+	if m.Balanced {
+		balance = 0
+	}
+	m.VTree, _ = m.VTree.RemoveBetween(b.Min.Y, b.Max.Y, shape, balance)
+	m.HTree, _ = m.HTree.RemoveBetween(b.Min.X, b.Max.X, shape, balance)
+	return m
+}
