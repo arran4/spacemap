@@ -251,10 +251,21 @@ type SplitArray []*Split
 func (sa SplitArray) Remove(shape shared.Shape) ([]*Split, []*Split) {
 	shrink := 0
 	var removedFrom []*Split
+	in := false
 	for sai := range sa {
 		var removeCount int
 		sa[sai].BecauseOf, removeCount = ShapeArray(sa[sai].BecauseOf).Remove(shape)
-		if removeCount > 0 {
+		min, max := shape.Bounds().Min.Y, shape.Bounds().Max.Y
+		switch sa[sai].Alignment {
+		case Horizontal:
+			min, max = shape.Bounds().Min.X, shape.Bounds().Max.X
+		}
+		if !in {
+			in = min <= sa[sai].Position
+		} else {
+			in = max >= sa[sai].Position
+		}
+		if removeCount > 0 || in {
 			removedFrom = append(removedFrom, sa[sai])
 		}
 		sa[sai-shrink] = sa[sai]
@@ -271,55 +282,37 @@ func (m *Struct) Remove(shape shared.Shape) *Struct {
 	m.VSplits, vRemovedFrom = SplitArray(m.VSplits).Remove(shape)
 	m.HSplits, hRemovedFrom = SplitArray(m.HSplits).Remove(shape)
 	var i int
+	ks := map[SplitCoordination]struct{}{}
 	for _, v := range vRemovedFrom {
 		for _, h := range m.HSplits {
 			k := SplitCoordination{HSplit: h, VSplit: v}
-			a, ok := m.Stacks[k]
-			if !ok {
-				continue
-			}
-			if len(v.BecauseOf) == 0 {
-				delete(m.Stacks, k)
-				continue
-			}
-			a, i = ShapeArray(a).Remove(shape)
-			if i > 0 {
-				m.Stacks[k] = a
-			}
+			ks[k] = struct{}{}
 		}
 	}
 	for _, v := range m.VSplits {
 		for _, h := range hRemovedFrom {
 			k := SplitCoordination{HSplit: h, VSplit: v}
-			a, ok := m.Stacks[k]
-			if !ok {
-				continue
-			}
-			if len(h.BecauseOf) == 0 {
-				delete(m.Stacks, k)
-				continue
-			}
-			a, i = ShapeArray(a).Remove(shape)
-			if i > 0 {
-				m.Stacks[k] = a
-			}
+			ks[k] = struct{}{}
 		}
 	}
 	for _, v := range vRemovedFrom {
 		for _, h := range hRemovedFrom {
 			k := SplitCoordination{HSplit: h, VSplit: v}
-			a, ok := m.Stacks[k]
-			if !ok {
-				continue
-			}
-			if len(h.BecauseOf) == 0 || len(v.BecauseOf) == 0 {
-				delete(m.Stacks, k)
-				continue
-			}
-			a, i = ShapeArray(a).Remove(shape)
-			if i > 0 {
-				m.Stacks[k] = a
-			}
+			ks[k] = struct{}{}
+		}
+	}
+	for k := range ks {
+		a, ok := m.Stacks[k]
+		if !ok {
+			continue
+		}
+		if len(k.HSplit.BecauseOf) == 0 || len(k.VSplit.BecauseOf) == 0 {
+			delete(m.Stacks, k)
+			continue
+		}
+		a, i = ShapeArray(a).Remove(shape)
+		if i > 0 {
+			m.Stacks[k] = a
 		}
 	}
 	return m
