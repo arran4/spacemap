@@ -36,13 +36,6 @@ func GenerateBenchShapes(limit int) (result []shared.Shape) {
 	return result
 }
 
-type Interface[T any] interface {
-	Add(shape shared.Shape, zIndex int) T
-	Remove(shape shared.Shape) T
-	GetStackAt(x int, y int) []shared.Shape
-	GetAt(x int, y int) shared.Shape
-}
-
 var (
 	_ Interface[*space2trees.Struct]   = (*space2trees.Struct)(nil)
 	_ Interface[*spaceparition.Struct] = (*spaceparition.Struct)(nil)
