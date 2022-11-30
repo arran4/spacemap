@@ -2,7 +2,7 @@ package space2trees
 
 import (
 	"fmt"
-	"spacemap/shared"
+	"github.com/arran4/spacemap/shared"
 )
 
 type Type int

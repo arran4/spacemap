@@ -1,6 +1,6 @@
 package spacemap
 
-import "spacemap/shared"
+import "github.com/arran4/spacemap/shared"
 
 type Interface[T any] interface {
 	Add(shape shared.Shape, zIndex int) T

@@ -1,8 +1,8 @@
 package simplearray
 
 import (
+	"github.com/arran4/spacemap/shared"
 	"github.com/google/go-cmp/cmp"
-	"spacemap/shared"
 	"testing"
 )
 

@@ -2,9 +2,9 @@ package spaceparition
 
 import (
 	"fmt"
+	"github.com/arran4/spacemap/shared"
 	"github.com/google/go-cmp/cmp"
 	"image"
-	"spacemap/shared"
 	"strings"
 	"testing"
 )

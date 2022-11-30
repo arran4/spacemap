@@ -1,10 +1,10 @@
 package spaceparition
 
 import (
+	"github.com/arran4/spacemap/shared"
 	"image"
 	"log"
 	"sort"
-	"spacemap/shared"
 )
 
 type Alignment int

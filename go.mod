@@ -1,4 +1,4 @@
-module spacemap
+module github.com/arran4/spacemap
 
 go 1.18
 

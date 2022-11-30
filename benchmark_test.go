@@ -1,11 +1,11 @@
 package spacemap
 
 import (
+	"github.com/arran4/spacemap/shared"
+	"github.com/arran4/spacemap/simplearray"
+	"github.com/arran4/spacemap/space2trees"
+	"github.com/arran4/spacemap/spacepartition"
 	"image"
-	"spacemap/shared"
-	"spacemap/simplearray"
-	"spacemap/space2trees"
-	"spacemap/spacepartition"
 	"testing"
 )
 

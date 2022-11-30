@@ -1,8 +1,8 @@
 package simplearray
 
 import (
+	"github.com/arran4/spacemap/shared"
 	"sort"
-	"spacemap/shared"
 )
 
 type Struct struct {

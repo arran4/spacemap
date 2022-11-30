@@ -3,10 +3,10 @@ package space2trees
 import (
 	"bytes"
 	"fmt"
+	"github.com/arran4/spacemap/shared"
 	"github.com/google/go-cmp/cmp"
 	"image"
 	"reflect"
-	"spacemap/shared"
 	"testing"
 )
 
