@@ -181,7 +181,7 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) *Struct {
 		for y := minyi; y <= maxyi; y++ {
 			hs := m.HSplits[x]
 			vs := m.VSplits[y]
-			m.Stacks[SC(hs, vs)] = append(m.Stacks[SC(hs, vs)], &shared.Point{
+			m.Stacks[SC(hs, vs)] = shared.PointArray(m.Stacks[SC(hs, vs)]).Insert(&shared.Point{
 				Shape:  shape,
 				ZIndex: zIndex,
 			})
@@ -201,7 +201,7 @@ func (m *Struct) GetXYPositions(p image.Point) (int, int) {
 }
 
 func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
-	xi, yi := m.GetXYPositions(image.Point{x, y})
+	xi, yi := m.GetXYPositions(image.Point{X: x, Y: y})
 	if xi >= 0 && yi >= 0 && xi <= len(m.HSplits) && yi <= len(m.VSplits) {
 		var hs *Split = nil
 		if xi < len(m.HSplits) {
@@ -246,19 +246,6 @@ func (a ShapeArray) Remove(shape shared.Shape) ([]shared.Shape, int) {
 	shrink := 0
 	for i := range a {
 		for a[i] == shape && len(a)-shrink > i {
-			shrink++
-			a[i] = a[len(a)-shrink]
-		}
-	}
-	return a[:len(a)-shrink], shrink
-}
-
-type PointArray []*shared.Point
-
-func (a PointArray) Remove(shape shared.Shape) ([]*shared.Point, int) {
-	shrink := 0
-	for i := range a {
-		for a[i].Shape == shape && len(a)-shrink > i {
 			shrink++
 			a[i] = a[len(a)-shrink]
 		}
@@ -330,10 +317,18 @@ func (m *Struct) Remove(shape shared.Shape) *Struct {
 			delete(m.Stacks, k)
 			continue
 		}
-		a, i = PointArray(a).Remove(shape)
+		a, i = shared.PointArray(a).Remove(shape)
 		if i > 0 {
 			m.Stacks[k] = a
 		}
 	}
 	return m
+}
+
+func (m *Struct) GetAt(x int, y int) shared.Shape {
+	s := m.GetStackAt(x, y)
+	if len(s) > 0 {
+		return s[0]
+	}
+	return nil
 }

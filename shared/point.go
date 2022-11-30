@@ -22,3 +22,27 @@ func (Z ZSort) Swap(i, j int) {
 }
 
 var _ sort.Interface = ZSort(nil)
+
+type PointArray []*Point
+
+func (pa PointArray) Remove(shape Shape) ([]*Point, int) {
+	shrink := 0
+	for i := range pa {
+		for pa[i].Shape == shape && len(pa)-shrink > i {
+			shrink++
+			pa[i] = pa[len(pa)-shrink]
+		}
+	}
+	return pa[:len(pa)-shrink], shrink
+}
+
+func (pa PointArray) Insert(point *Point) []*Point {
+	a := pa
+	p := 0
+	for ; p < len(a) && point.ZIndex >= a[p].ZIndex; p++ {
+	}
+	a = append(a, nil)
+	copy(a[p+1:], a[p:])
+	a[p] = point
+	return a
+}

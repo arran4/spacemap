@@ -55,3 +55,11 @@ func (sm *Struct) GetStackAt(x int, y int) (result []shared.Shape) {
 	}
 	return
 }
+
+func (sm *Struct) GetAt(x int, y int) shared.Shape {
+	s := sm.GetStackAt(x, y)
+	if len(s) > 0 {
+		return s[0]
+	}
+	return nil
+}

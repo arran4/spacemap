@@ -837,3 +837,188 @@ func scanForInNode(tree *Node, shape shared.Shape) int {
 func PI(i int) *int {
 	return &i
 }
+
+func TestZIndex(t *testing.T) {
+	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
+	rect2 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect2"))
+	tests := []struct {
+		name        string
+		Constructor func() *Struct
+		want        shared.Shape
+	}{
+		{
+			name: "r1&2 want r2",
+			Constructor: func() *Struct {
+				s := New()
+				s.Add(rect1, 1)
+				s.Add(rect2, 0)
+				return s
+			},
+			want: rect2,
+		},
+		{
+			name: "r1&2 want r1",
+			Constructor: func() *Struct {
+				s := New()
+				s.Add(rect1, 1)
+				s.Add(rect2, 2)
+				return s
+			},
+			want: rect1,
+		},
+		{
+			name: "r2&1 want r2",
+			Constructor: func() *Struct {
+				s := New()
+				s.Add(rect2, 0)
+				s.Add(rect1, 1)
+				return s
+			},
+			want: rect2,
+		},
+		{
+			name: "r2&1 want r1",
+			Constructor: func() *Struct {
+				s := New()
+				s.Add(rect2, 2)
+				s.Add(rect1, 1)
+				return s
+			},
+			want: rect1,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			sm := test.Constructor()
+			r := sm.GetAt(50, 50)
+			if r != test.want {
+				tt.Errorf("Failed got %s expected %s", r, test.want)
+			}
+		})
+	}
+}
+
+func TestNode_InsertHere(t *testing.T) {
+	rect1 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect1"))
+	rect2 := shared.NewRectangle(10, 10, 100, 100, shared.Name("rect2"))
+	tests := []struct {
+		name string
+		*Node
+		ZIndex   *int
+		Shape    shared.Shape
+		Type     Type
+		Expected []*Here
+	}{
+		{
+			name: "Insert into empty okay",
+			Node: &Node{
+				Here: []*Here{},
+			},
+			ZIndex: PI(0),
+			Shape:  rect1,
+			Type:   0,
+			Expected: []*Here{
+				&Here{Shape: rect1, ZIndex: 0},
+			},
+		},
+		{
+			name: "Insert into duplicate zid",
+			Node: &Node{
+				Here: []*Here{
+					&Here{Shape: rect1, ZIndex: 0},
+				},
+			},
+			ZIndex: PI(0),
+			Shape:  rect2,
+			Type:   0,
+			Expected: []*Here{
+				&Here{Shape: rect1, ZIndex: 0},
+				&Here{Shape: rect2, ZIndex: 0},
+			},
+		},
+		{
+			name: "Insert into duplicate zid reversed",
+			Node: &Node{
+				Here: []*Here{
+					&Here{Shape: rect2, ZIndex: 0},
+				},
+			},
+			ZIndex: PI(0),
+			Shape:  rect1,
+			Type:   0,
+			Expected: []*Here{
+				&Here{Shape: rect2, ZIndex: 0},
+				&Here{Shape: rect1, ZIndex: 0},
+			},
+		},
+		{
+			name: "Insert into one lower",
+			Node: &Node{
+				Here: []*Here{
+					&Here{Shape: rect2, ZIndex: -1},
+				},
+			},
+			ZIndex: PI(0),
+			Shape:  rect1,
+			Type:   0,
+			Expected: []*Here{
+				&Here{Shape: rect2, ZIndex: -1},
+				&Here{Shape: rect1, ZIndex: 0},
+			},
+		},
+		{
+			name: "Insert into one greater",
+			Node: &Node{
+				Here: []*Here{
+					&Here{Shape: rect2, ZIndex: 1},
+				},
+			},
+			ZIndex: PI(0),
+			Shape:  rect1,
+			Type:   0,
+			Expected: []*Here{
+				&Here{Shape: rect1, ZIndex: 0},
+				&Here{Shape: rect2, ZIndex: 1},
+			},
+		},
+		{
+			name: "Insert into position 5 of 10",
+			Node: &Node{
+				Here: []*Here{
+					&Here{Shape: rect2, ZIndex: 1},
+					&Here{Shape: rect2, ZIndex: 2},
+					&Here{Shape: rect2, ZIndex: 3},
+					&Here{Shape: rect2, ZIndex: 4},
+					&Here{Shape: rect2, ZIndex: 6},
+					&Here{Shape: rect2, ZIndex: 7},
+					&Here{Shape: rect2, ZIndex: 8},
+					&Here{Shape: rect2, ZIndex: 9},
+					&Here{Shape: rect2, ZIndex: 10},
+				},
+			},
+			ZIndex: PI(5),
+			Shape:  rect1,
+			Type:   0,
+			Expected: []*Here{
+				&Here{Shape: rect2, ZIndex: 1},
+				&Here{Shape: rect2, ZIndex: 2},
+				&Here{Shape: rect2, ZIndex: 3},
+				&Here{Shape: rect2, ZIndex: 4},
+				&Here{Shape: rect1, ZIndex: 5},
+				&Here{Shape: rect2, ZIndex: 6},
+				&Here{Shape: rect2, ZIndex: 7},
+				&Here{Shape: rect2, ZIndex: 8},
+				&Here{Shape: rect2, ZIndex: 9},
+				&Here{Shape: rect2, ZIndex: 10},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.InsertHere(tt.ZIndex, tt.Shape, tt.Type)
+			if diff := cmp.Diff(tt.Node.Here, tt.Expected); diff != "" {
+				t.Errorf("Error mismatch with here and expected;\n%s", diff)
+			}
+		})
+	}
+}

@@ -104,11 +104,17 @@ func (n *Node) InsertHere(zIndex *int, s shared.Shape, t Type) {
 	if zIndex != nil {
 		zi = *zIndex
 	}
-	n.Here = append(n.Here, &Here{
+	h := &Here{
 		Shape:  s,
 		ZIndex: zi,
 		Type:   t,
-	})
+	}
+	p := 0
+	for ; p < len(n.Here) && h.ZIndex >= n.Here[p].ZIndex; p++ {
+	}
+	n.Here = append(n.Here, nil)
+	copy(n.Here[p+1:], n.Here[p:])
+	n.Here[p] = h
 }
 
 func (n *Node) InsertHereReZIndex(zIndex *int, s shared.Shape, t Type) {
@@ -480,4 +486,12 @@ func (m *Struct) Remove(shape shared.Shape) *Struct {
 	m.VTree, _ = m.VTree.RemoveBetween(b.Min.Y, b.Max.Y, shape, balance)
 	m.HTree, _ = m.HTree.RemoveBetween(b.Min.X, b.Max.X, shape, balance)
 	return m
+}
+
+func (m *Struct) GetAt(x int, y int) shared.Shape {
+	s := m.GetStackAt(x, y)
+	if len(s) > 0 {
+		return s[0]
+	}
+	return nil
 }
