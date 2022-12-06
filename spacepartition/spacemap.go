@@ -1,4 +1,4 @@
-package spaceparition
+package spacepartition
 
 import (
 	"github.com/arran4/spacemap/shared"
