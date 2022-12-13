@@ -58,16 +58,20 @@ func (m *Struct) AddAll(shapes ...shared.Shape) *Struct {
 
 func (m *Struct) Add(shape shared.Shape, zIndex int) {
 	b := shape.Bounds()
+	// Get x and y pos
 	minxi, minyi := m.GetXYPositions(b.Min)
 	maxxi, maxyi := m.GetXYPositions(b.Max)
 	{
 		var maxxhs [2]*Split
+		// Determine if we need to create a new H split either too big, or value doesn't match.
 		if maxxi == len(m.HSplits) || m.HSplits[maxxi].Position != b.Max.X {
+			// New horizontal split
 			maxxhs[0] = &Split{
 				Position:  b.Max.X,
 				BecauseOf: []shared.Shape{shape},
 				Alignment: Horizontal,
 			}
+			// The split at the location we want to put the new split, needed for splitting
 			if maxxi >= 0 && maxxi < len(m.HSplits) {
 				maxxhs[1] = m.HSplits[maxxi]
 			}
@@ -75,7 +79,10 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) {
 		} else {
 			m.HSplits[maxxi].BecauseOf = append(m.HSplits[maxxi].BecauseOf, shape)
 		}
+		// Determine if we need to create a new V split either too big, or value doesn't match. If we do, proceed to
+		// split and populate the H axis in the stacks correctly
 		if maxyi == len(m.VSplits) || m.VSplits[maxyi].Position != b.Max.Y {
+			// Original vertical split
 			var ovs *Split
 			vs := &Split{
 				Position:  b.Max.Y,
@@ -86,6 +93,7 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) {
 				ovs = m.VSplits[maxyi]
 			}
 			m.VSplits = append(m.VSplits[:maxyi], append([]*Split{vs}, m.VSplits[maxyi:]...)...)
+			// The last horizontal split
 			var lhs *Split
 			for _, hs := range m.HSplits {
 				_, exists := m.Stacks[SC(hs, vs)]
@@ -99,6 +107,10 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) {
 					} else if lhs != nil {
 						m.Stacks[SC(hs, vs)] = append([]*shared.Point{}, m.Stacks[SC(lhs, ovs)]...)
 					}
+				} else {
+					if v, ok := m.Stacks[SC(hs, vs)]; !ok || v == nil {
+						m.Stacks[SC(hs, vs)] = []*shared.Point{}
+					}
 				}
 				lhs = hs
 			}
@@ -111,8 +123,11 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) {
 				if exists {
 					continue
 				}
+				// We need to copy in the existing stack for the whole column where we haven't made any changes
 				if maxxhs[1] != nil {
 					m.Stacks[SC(maxxhs[0], vs)] = append([]*shared.Point{}, m.Stacks[SC(maxxhs[1], vs)]...)
+				} else {
+					m.Stacks[SC(maxxhs[0], vs)] = []*shared.Point{}
 				}
 			}
 		}
@@ -172,6 +187,8 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) {
 				}
 				if minxhs[1] != nil {
 					m.Stacks[SC(minxhs[0], vs)] = append([]*shared.Point{}, m.Stacks[SC(minxhs[1], vs)]...)
+				} else {
+					m.Stacks[SC(minxhs[0], vs)] = []*shared.Point{}
 				}
 			}
 		}
@@ -219,7 +236,9 @@ func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
 			if s, ok := m.Stacks[SC(hs, vs)]; ok && s != nil {
 				var r = make([]shared.Shape, 0, len(s))
 				for _, p := range s {
-					r = append(r, p.Shape)
+					if p.PointIn(x, y) {
+						r = append(r, p.Shape)
+					}
 				}
 				return r
 			}

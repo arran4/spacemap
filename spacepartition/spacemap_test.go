@@ -45,13 +45,20 @@ func TestSpaceMap(t *testing.T) {
 		{
 			Name:      "Hit High Border",
 			Stack:     []shared.Shape{rect1},
+			Position:  rect1.Max.Add(image.Pt(-1, -1)),
+			SpaceMap:  NSM(rect1),
+			NumberMap: [][]int{{1, 1}, {1, 1}},
+		},
+		{
+			Name:      "Miss High Border",
+			Stack:     []shared.Shape{},
 			Position:  rect1.Max,
 			SpaceMap:  NSM(rect1),
 			NumberMap: [][]int{{1, 1}, {1, 1}},
 		},
 		{
 			Name:      "Miss -- Near Hit High Border",
-			Stack:     []shared.Shape{rect1},
+			Stack:     []shared.Shape{},
 			Position:  rect1.Max.Add(image.Pt(1, 1)),
 			SpaceMap:  NSM(rect1),
 			NumberMap: [][]int{{1, 1}, {1, 1}},
