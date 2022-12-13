@@ -3,7 +3,6 @@ package spacepartition
 import (
 	"github.com/arran4/spacemap/shared"
 	"image"
-	"log"
 	"sort"
 )
 
@@ -223,8 +222,6 @@ func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
 					r = append(r, p.Shape)
 				}
 				return r
-			} else {
-				log.Default()
 			}
 		}
 	}
