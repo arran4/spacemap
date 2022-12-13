@@ -20,6 +20,7 @@ func TestSpaceMap(t *testing.T) {
 	rect2 := shared.NewRectangle(40, 40, 60, 60)
 	rect3 := shared.NewRectangle(10, 10, 60, 60)
 	rect4 := shared.NewRectangle(60, 60, 100, 100)
+	rect5 := shared.NewRectangle(100, 100, 200, 200)
 	for _, test := range []struct {
 		Name      string
 		Stack     []shared.Shape
@@ -89,6 +90,34 @@ func TestSpaceMap(t *testing.T) {
 			Position:  image.Point{90, 90},
 			SpaceMap:  NSM(rect1, rect4),
 			NumberMap: [][]int{{1, 1, 1}, {1, 2, 2}, {1, 2, 2}},
+		},
+		{
+			Name:      "Hit first in diagonal configuration",
+			Stack:     []shared.Shape{rect1},
+			Position:  image.Point{90, 90},
+			SpaceMap:  NSM(rect1, rect5),
+			NumberMap: [][]int{{1, 1, 0}, {1, 2, 1}, {0, 1, 1}},
+		},
+		{
+			Name:      "Hit second in diagonal configuration",
+			Stack:     []shared.Shape{rect5},
+			Position:  image.Point{190, 190},
+			SpaceMap:  NSM(rect1, rect5),
+			NumberMap: [][]int{{1, 1, 0}, {1, 2, 1}, {0, 1, 1}},
+		},
+		{
+			Name:      "Empty space first in diagonal configuration",
+			Stack:     []shared.Shape{},
+			Position:  image.Point{90, 190},
+			SpaceMap:  NSM(rect1, rect5),
+			NumberMap: [][]int{{1, 1, 0}, {1, 2, 1}, {0, 1, 1}},
+		},
+		{
+			Name:      "Empty space second in diagonal configuration",
+			Stack:     []shared.Shape{},
+			Position:  image.Point{190, 90},
+			SpaceMap:  NSM(rect1, rect5),
+			NumberMap: [][]int{{1, 1, 0}, {1, 2, 1}, {0, 1, 1}},
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
