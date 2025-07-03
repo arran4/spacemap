@@ -1,8 +1,8 @@
 package space2trees
 
 import (
-	"fmt"
 	"github.com/arran4/spacemap/shared"
+	"strconv"
 )
 
 type Type int
@@ -32,7 +32,7 @@ type Here struct {
 }
 
 func (h *Here) String() string {
-	return fmt.Sprintf("Here(%s, Z:%d, Type:%s)", h.Shape, h.ZIndex, h.Type)
+	return "Here(" + h.Shape.String() + ", Z:" + strconv.Itoa(h.ZIndex) + ", Type:" + h.Type.String() + ")"
 }
 
 func (h *Here) Copy() *Here {
@@ -43,7 +43,10 @@ func (h *Here) Copy() *Here {
 	}
 }
 
-var _ fmt.Stringer = (*Here)(nil)
+// Ensure Here implements the Stringer interface without importing fmt.
+type stringer interface{ String() string }
+
+var _ stringer = (*Here)(nil)
 
 type Node struct {
 	Value    int

@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"fmt"
 	"image"
 )
 
@@ -29,7 +28,7 @@ func (r Rectangle) String() string {
 	if len(r.Name) > 0 {
 		n = r.Name + ":"
 	}
-	return fmt.Sprintf("%sRect(%s->%s)", n, r.Min, r.Max)
+	return n + "Rect(" + r.Min.String() + "->" + r.Max.String() + ")"
 }
 
 func (r Rectangle) PointIn(x, y int) bool {
