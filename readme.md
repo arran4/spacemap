@@ -96,3 +96,6 @@ go test -bench .
 
 This project is experimental but functional.  The algorithms are independent and may evolve separately. Contributions and bug reports are welcome.
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
