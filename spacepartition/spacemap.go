@@ -1,9 +1,10 @@
 package spacepartition
 
 import (
-	"github.com/arran4/spacemap/shared"
 	"image"
 	"sort"
+
+	"github.com/arran4/spacemap/shared"
 )
 
 type Alignment int
@@ -177,7 +178,7 @@ func (m *Struct) Add(shape shared.Shape, zIndex int) {
 			}
 			maxyi++
 		} else {
-			m.VSplits[minxi].BecauseOf = append(m.VSplits[minxi].BecauseOf, shape)
+			m.VSplits[minyi].BecauseOf = append(m.VSplits[minyi].BecauseOf, shape)
 		}
 		if minxhs[0] != nil {
 			for _, vs := range m.VSplits {
