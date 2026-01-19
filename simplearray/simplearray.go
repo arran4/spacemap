@@ -37,7 +37,11 @@ func (sm *Struct) Remove(s shared.Shape) {
 			sm.Shapes[i] = sm.Shapes[len(sm.Shapes)-shrink]
 		}
 	}
-	sm.Shapes = sm.Shapes[:len(sm.Shapes)-shrink]
+	newLen := len(sm.Shapes) - shrink
+	for i := newLen; i < len(sm.Shapes); i++ {
+		sm.Shapes[i] = nil
+	}
+	sm.Shapes = sm.Shapes[:newLen]
 }
 
 func (sm *Struct) GetStackAt(x int, y int) (result []shared.Shape) {
