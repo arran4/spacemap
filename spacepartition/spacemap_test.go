@@ -343,3 +343,37 @@ func TestZIndex(t *testing.T) {
 		})
 	}
 }
+
+func TestShapeArray_Remove_MemoryLeak(t *testing.T) {
+	s1 := shared.NewRectangle(0, 0, 10, 10)
+	s2 := shared.NewRectangle(10, 10, 20, 20)
+	s3 := shared.NewRectangle(20, 20, 30, 30)
+
+	// Initialize ShapeArray with capacity = length
+	arr := make(ShapeArray, 3)
+	arr[0] = s1
+	arr[1] = s2
+	arr[2] = s3
+
+	// Remove s2 (middle element)
+	// Current implementation: swap s2 with s3, shrink by 1.
+	// Expected result slice: [s1, s3]
+	// Expected underlying array: [s1, s3, s3] (Leak)
+	// Desired underlying array: [s1, s3, nil]
+
+	newArr, _ := arr.Remove(s2)
+
+	if len(newArr) != 2 {
+		t.Fatalf("Expected length 2, got %d", len(newArr))
+	}
+
+	// Access the underlying array up to capacity
+	underlying := newArr[:cap(newArr)]
+
+	// The element at index 2 (the one that was "removed" from the slice)
+	leaked := underlying[2]
+
+	if leaked != nil {
+		t.Errorf("Memory leak detected: element at index 2 is not nil: %v", leaked)
+	}
+}
