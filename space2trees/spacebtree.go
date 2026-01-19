@@ -444,6 +444,9 @@ func (n *Node) RemoveHere(s shared.Shape) int {
 		}
 		n.Here[i] = n.Here[i+shrink]
 	}
+	for i := len(n.Here) - shrink; i < len(n.Here); i++ {
+		n.Here[i] = nil
+	}
 	n.Here = n.Here[:len(n.Here)-shrink]
 	return len(n.Here)
 }
