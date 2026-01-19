@@ -358,15 +358,29 @@ func (m *Struct) GetStackAt(x int, y int) []shared.Shape {
 	if len(xs) == 0 {
 		return []shared.Shape{}
 	}
-	seen := map[shared.Shape]struct{}{}
-	for _, e := range xs {
-		seen[e] = struct{}{}
-	}
 	ys := m.VTree.Get(y)
 	if len(ys) == 0 {
 		return []shared.Shape{}
 	}
-	result := make([]shared.Shape, 0)
+
+	if len(xs)*len(ys) < 64 {
+		result := make([]shared.Shape, 0, len(ys))
+		for _, yVal := range ys {
+			for _, xVal := range xs {
+				if xVal == yVal {
+					result = append(result, yVal)
+					break
+				}
+			}
+		}
+		return result
+	}
+
+	seen := make(map[shared.Shape]struct{}, len(xs))
+	for _, e := range xs {
+		seen[e] = struct{}{}
+	}
+	result := make([]shared.Shape, 0, len(ys))
 	for _, e := range ys {
 		if _, ok := seen[e]; ok {
 			result = append(result, e)
