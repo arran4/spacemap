@@ -52,6 +52,7 @@ func (sm *Struct) GetStackAt(x int, y int) (result []shared.Shape) {
 		}
 	}
 	sort.Sort(shared.ZSort(r))
+	result = make([]shared.Shape, 0, len(r))
 	for _, e := range r {
 		result = append(result, e.Shape)
 	}
