@@ -3,11 +3,12 @@ package space2trees
 import (
 	"bytes"
 	"fmt"
-	"github.com/arran4/spacemap/shared"
-	"github.com/google/go-cmp/cmp"
 	"image"
 	"reflect"
 	"testing"
+
+	"github.com/arran4/spacemap/shared"
+	"github.com/google/go-cmp/cmp"
 )
 
 func NSMBalanced(shapes ...shared.Shape) func() *Struct {
@@ -1017,7 +1018,7 @@ func TestNode_InsertHere(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.InsertHere(tt.ZIndex, tt.Shape, tt.Type)
-			if diff := cmp.Diff(tt.Node.Here, tt.Expected); diff != "" {
+			if diff := cmp.Diff(tt.Here, tt.Expected); diff != "" {
 				t.Errorf("Error mismatch with here and expected;\n%s", diff)
 			}
 		})

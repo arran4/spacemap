@@ -1,8 +1,9 @@
 package space2trees
 
 import (
-	"github.com/arran4/spacemap/shared"
 	"strconv"
+
+	"github.com/arran4/spacemap/shared"
 )
 
 type Type int
@@ -174,7 +175,7 @@ func (n *Node) AvlBalance(depth int) *Node {
 	}
 	_ = n.RecalculateDepth(depth)
 	nBal := n.Balance()
-	var cBal Balance = Balanced
+	var cBal = Balanced
 	switch nBal {
 	case Left:
 		cBal = n.Children[0].Balance()
