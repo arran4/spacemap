@@ -264,6 +264,7 @@ func (a ShapeArray) Remove(shape shared.Shape) ([]shared.Shape, int) {
 		for a[i] == shape && len(a)-shrink > i {
 			shrink++
 			a[i] = a[len(a)-shrink]
+			a[len(a)-shrink] = nil
 		}
 	}
 	return a[:len(a)-shrink], shrink
