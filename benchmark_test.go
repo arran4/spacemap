@@ -122,3 +122,14 @@ func BenchmarkSimpleArrayAddDelete(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkSimpleArraySearch(b *testing.B) {
+	sm := simplearray.New()
+	sm.AddAll(benchShapes...)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, l := range spaceLookups {
+			sm.GetStackAt(l.X, l.Y)
+		}
+	}
+}
