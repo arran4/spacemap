@@ -33,6 +33,10 @@ func (pa PointArray) Remove(shape Shape) ([]*Point, int) {
 			pa[i] = pa[len(pa)-shrink]
 		}
 	}
+	// Avoid memory leak by niling out the pointers in the removed section of the underlying array
+	for i := len(pa) - shrink; i < len(pa); i++ {
+		pa[i] = nil
+	}
 	return pa[:len(pa)-shrink], shrink
 }
 
