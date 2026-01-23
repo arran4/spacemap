@@ -296,6 +296,9 @@ func (sa SplitArray) Remove(shape shared.Shape) ([]*Split, []*Split) {
 			shrink++
 		}
 	}
+	for i := 0; i < shrink; i++ {
+		sa[len(sa)-1-i] = nil
+	}
 	return sa[:len(sa)-shrink], removedFrom
 }
 
